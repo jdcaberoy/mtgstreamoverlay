@@ -193,6 +193,44 @@ function AddCardModal({ onClose, onAdd }) {
   );
 }
 
+
+// ── Chroma Color Picker ───────────────────────────────────────────
+const CHROMA_PRESETS = [
+  { label: 'Green',   value: '#00ff00' },
+  { label: 'Blue',    value: '#0000ff' },
+  { label: 'Magenta', value: '#ff00ff' },
+  { label: 'Cyan',    value: '#00ffff' },
+  { label: 'Black',   value: '#000000' },
+  { label: 'White',   value: '#ffffff' },
+];
+
+function ChromaPicker({ label, value, onChange }) {
+  return (
+    <div style={{ marginBottom:10 }}>
+      <div style={{ fontSize:10, color:'#888', fontWeight:700, textTransform:'uppercase', letterSpacing:1, marginBottom:5 }}>{label}</div>
+      <div style={{ display:'flex', gap:5, flexWrap:'wrap', alignItems:'center' }}>
+        {CHROMA_PRESETS.map(c => (
+          <button key={c.value} title={c.label} onClick={() => onChange(c.value)} style={{
+            display:'flex', alignItems:'center', gap:4,
+            padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10, fontWeight:600,
+            border: value === c.value ? '2px solid #111' : '1px solid #ddd',
+            background: value === c.value ? '#f0f0f0' : '#fff',
+            color: '#333',
+          }}>
+            <span style={{ width:10, height:10, borderRadius:'50%', background:c.value, border:'1px solid #ccc', display:'inline-block', flexShrink:0 }} />
+            {c.label}
+          </button>
+        ))}
+        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+          <label style={{ fontSize:10, color:'#aaa' }}>Custom:</label>
+          <input type="color" value={value} onChange={e => onChange(e.target.value)}
+            style={{ width:24, height:24, border:'1px solid #ddd', borderRadius:4, cursor:'pointer', padding:1 }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Column ───────────────────────────────────────────────────
 export default function CardDeckColumn({ state, setState }) {
   const [searchQ,     setSearchQ]     = useState('');
@@ -298,11 +336,18 @@ export default function CardDeckColumn({ state, setState }) {
       {showAddCard && <AddCardModal onClose={() => setShowAddCard(false)} onAdd={addSingleCard} />}
 
       <div style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden' }}>
-        <div style={secTitle}>Card / Deck Controls</div>
+        <div style={secTitle}>Primary Card / Deck Controls</div>
 
         <button style={{ ...linkBtn, marginBottom:8 }} onClick={() => window.open('/overlay/card', '_blank')}>
           🃏 Open Card Overlay
         </button>
+
+        {/* Card Overlay Chroma Color */}
+        <ChromaPicker
+          label="Card Overlay Background"
+          value={state.cardChromaColor || '#00ff00'}
+          onChange={v => setState(p => ({ ...p, cardChromaColor: v }))}
+        />
 
         {/* Search */}
         <div style={{ display:'flex', gap:6, marginBottom:6 }}>

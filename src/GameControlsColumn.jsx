@@ -87,54 +87,26 @@ export default function GameControlsColumn({ state, setState }) {
         </div>
       </Section>
 
-      {/* Chroma colors */}
-      <Section title="Overlay Background (Chroma Key)">
-        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          <div>
-            <div style={{ fontSize:10, color:'#888', marginBottom:4, fontWeight:600 }}>Game Overlay</div>
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-              {CHROMA_COLORS.map(c => (
-                <button key={c.value} title={c.label} onClick={() => updEv('gameChromaColor', c.value)} style={{
-                  display:'flex', alignItems:'center', gap:5,
-                  padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:600,
-                  border: s.gameChromaColor === c.value ? '2px solid #111' : '1px solid #ddd',
-                  background: s.gameChromaColor === c.value ? '#f0f0f0' : '#fff',
-                  color: '#333',
-                }}>
-                  <span style={{ width:12, height:12, borderRadius:'50%', background:c.value, border:'1px solid #ccc', display:'inline-block', flexShrink:0 }} />
-                  {c.label}
-                </button>
-              ))}
-              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                <label style={{ fontSize:11, color:'#888' }}>Custom:</label>
-                <input type="color" value={s.gameChromaColor || '#00ff00'}
-                  onChange={e => updEv('gameChromaColor', e.target.value)}
-                  style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, cursor:'pointer', padding:2 }} />
-              </div>
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize:10, color:'#888', marginBottom:4, fontWeight:600 }}>Card Overlay</div>
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-              {CHROMA_COLORS.map(c => (
-                <button key={c.value} title={c.label} onClick={() => updEv('cardChromaColor', c.value)} style={{
-                  display:'flex', alignItems:'center', gap:5,
-                  padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:600,
-                  border: s.cardChromaColor === c.value ? '2px solid #111' : '1px solid #ddd',
-                  background: s.cardChromaColor === c.value ? '#f0f0f0' : '#fff',
-                  color: '#333',
-                }}>
-                  <span style={{ width:12, height:12, borderRadius:'50%', background:c.value, border:'1px solid #ccc', display:'inline-block', flexShrink:0 }} />
-                  {c.label}
-                </button>
-              ))}
-              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                <label style={{ fontSize:11, color:'#888' }}>Custom:</label>
-                <input type="color" value={s.cardChromaColor || '#00ff00'}
-                  onChange={e => updEv('cardChromaColor', e.target.value)}
-                  style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, cursor:'pointer', padding:2 }} />
-              </div>
-            </div>
+      {/* Chroma color — Game Overlay only */}
+      <Section title="Game Overlay Background (Chroma Key)">
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          {CHROMA_COLORS.map(c => (
+            <button key={c.value} title={c.label} onClick={() => updEv('gameChromaColor', c.value)} style={{
+              display:'flex', alignItems:'center', gap:5,
+              padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:600,
+              border: s.gameChromaColor === c.value ? '2px solid #111' : '1px solid #ddd',
+              background: s.gameChromaColor === c.value ? '#f0f0f0' : '#fff',
+              color: '#333',
+            }}>
+              <span style={{ width:12, height:12, borderRadius:'50%', background:c.value, border:'1px solid #ccc', display:'inline-block', flexShrink:0 }} />
+              {c.label}
+            </button>
+          ))}
+          <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+            <label style={{ fontSize:11, color:'#888' }}>Custom:</label>
+            <input type="color" value={s.gameChromaColor || '#00ff00'}
+              onChange={e => updEv('gameChromaColor', e.target.value)}
+              style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, cursor:'pointer', padding:2 }} />
           </div>
         </div>
       </Section>

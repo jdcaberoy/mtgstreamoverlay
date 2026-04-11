@@ -23,7 +23,7 @@ export default function Dashboard() {
       />
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '260px 340px 300px 280px',
+        gridTemplateColumns: '260px 390px 310px 310px',
         height: '100vh',
         overflow: 'hidden',
         fontFamily: "'Inter', sans-serif",
@@ -36,19 +36,19 @@ export default function Dashboard() {
           <SummaryColumn state={state} />
         </div>
 
-        {/* Col 2 — Game Controls */}
+        {/* Col 2 — Game Controls (slightly wider: 390px) */}
         <div style={{ ...COL }}>
           <GameControlsColumn state={state} setState={setState} />
         </div>
 
-        {/* Col 3 — Card/Deck */}
-        <div style={{ ...COL, borderRight:'1px solid #ebebeb' }}>
+        {/* Col 3 — Primary Card/Deck */}
+        <div style={{ ...COL }}>
           <CardDeckColumn state={state} setState={setState} />
         </div>
 
-        {/* Col 4 — Card Preview */}
-        <div style={{ ...COL, borderRight:'none' }}>
-          <CardPreviewColumn state={state} />
+        {/* Col 4 — Secondary Card/Deck */}
+        <div style={{ ...COL, borderRight: 'none' }}>
+          <CardPreviewColumn state={state} setState={setState} />
         </div>
       </div>
     </>
