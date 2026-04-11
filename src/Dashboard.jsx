@@ -23,7 +23,8 @@ export default function Dashboard() {
       />
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '260px 390px 310px 310px',
+        /* Col 1: summary | Col 2+3: game controls (spans 2) | Col 4: primary card | Col 5: secondary card */
+        gridTemplateColumns: '240px 380px 300px 300px',
         height: '100vh',
         overflow: 'hidden',
         fontFamily: "'Inter', sans-serif",
@@ -31,12 +32,13 @@ export default function Dashboard() {
         background: '#fff',
         color: '#111',
       }}>
+
         {/* Col 1 — Summary */}
         <div style={{ ...COL, background: '#fafafa' }}>
           <SummaryColumn state={state} />
         </div>
 
-        {/* Col 2 — Game Controls (slightly wider: 390px) */}
+        {/* Col 2 — Game Controls (wider, 2-col internal layout) */}
         <div style={{ ...COL }}>
           <GameControlsColumn state={state} setState={setState} />
         </div>

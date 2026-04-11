@@ -39,6 +39,7 @@ function makePlayer(name, strat, color) {
 
 export function defaultState() {
   return {
+    // event
     evName:       'Clash of Cards',
     evFont:       EVENT_FONTS[0].value,
     evStage:      'Finals',
@@ -49,6 +50,7 @@ export function defaultState() {
     showRound:    true,
     evTurn:       1,
     maxLP:        40,
+    // players
     playerCount:  4,
     players: [
       makePlayer('Player One',   'Aggro',    '#4fc3f7'),
@@ -56,12 +58,22 @@ export function defaultState() {
       makePlayer('Player Three', 'Midrange', '#66bb6a'),
       makePlayer('Player Four',  'Combo',    '#ffa726'),
     ],
-    gameLayout:      'bottom',
-    gameChromaColor: '#00ff00',
-    cardChromaColor: '#00ff00',
-    cardImage:    null,
-    cardName:     '',
-    decks: [[], [], [], []],
+    // overlay
+    gameLayout:       'bottom',
+    gameChromaColor:  '#00ff00',
+    // card slot 1 (primary)
+    card1Image:       null,
+    card1Name:        '',
+    card1Visible:     false,
+    card1ChromaColor: '#00ff00',
+    // card slot 2 (secondary)
+    card2Image:       null,
+    card2Name:        '',
+    card2Visible:     false,
+    card2ChromaColor: '#00ff00',
+    // decks: two independent sets [slot][player]
+    decks1: [[], [], [], []],
+    decks2: [[], [], [], []],
   };
 }
 
