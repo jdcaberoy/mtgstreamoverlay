@@ -272,13 +272,17 @@ export default function CardDeckColumn({ state, setState }) {
       {showImport  && <ImportModal  onClose={() => setShowImport(false)}  onImport={(p,m) => importDeck(activeTab,p,m)} />}
       {showAddCard && <AddCardModal onClose={() => setShowAddCard(false)} onAdd={(n,q,s) => addSingleCard(activeTab,n,q,s)} />}
 
-      <div style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden' }}>
-        <div style={secTitle}>Primary Card / Deck Controls</div>
+      <div style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', gap:0 }}>
 
-        {/* Open overlay */}
-        <button style={{ ...linkBtn, marginBottom:8 }} onClick={() => window.open('/#/overlay/card/1', '_blank')}>
-          🃏 Open Card Overlay 1
-        </button>
+        {/* Header: title + open button inline */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid #ebebeb', paddingBottom:8, marginBottom:10 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:1.5 }}>
+            Primary Card / Deck
+          </div>
+          <button style={openBtn} onClick={() => window.open('/#/overlay/card/1', '_blank')}>
+            🃏 Overlay 1
+          </button>
+        </div>
 
         {/* Visibility toggle */}
         <VisibilityBar
@@ -288,24 +292,34 @@ export default function CardDeckColumn({ state, setState }) {
           onClear={clearCard}
         />
 
-        {/* Chroma */}
-        <ChromaPicker label="Card 1 Overlay Background" value={state.card1ChromaColor || '#00ff00'} onChange={setChroma} />
+        {/* Chroma compact */}
+        <div style={{ marginBottom:8 }}>
+          <div style={{ fontSize:9, color:'#aaa', fontWeight:700, textTransform:'uppercase', letterSpacing:1, marginBottom:4 }}>Chroma Background</div>
+          <ChromaPicker label="" value={state.card1ChromaColor || '#00ff00'} onChange={setChroma} />
+        </div>
 
         {/* Search */}
-        <div style={{ display:'flex', gap:6, marginBottom:6 }}>
-          <input style={{ ...inp, flex:1 }} placeholder="Search card name..."
+        <div style={{ display:'flex', gap:5, marginBottom:4 }}>
+          <input style={{ ...inp, flex:1 }} placeholder="Search card…"
             value={searchQ} onChange={e => setSearchQ(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ)} />
           <button style={searchBtn} onClick={() => handleSearch(searchQ)} disabled={loading}>{loading ? '…' : 'Show'}</button>
         </div>
-        {error && <div style={{ color:'#c62828', fontSize:12, marginBottom:6 }}>{error}</div>}
+        {error && <div style={{ color:'#c62828', fontSize:11, marginBottom:4 }}>{error}</div>}
 
-        {/* Card preview */}
+        {/* Card thumbnail — compact side-by-side */}
         {state.card1Image && (
-          <div style={{ position:'relative', marginBottom:10 }}>
+          <div style={{ display:'flex', gap:8, marginBottom:8, alignItems:'flex-start', background:'#f8f8f8', borderRadius:8, padding:'8px', border:'1px solid #ebebeb' }}>
             <img src={state.card1Image} alt={state.card1Name}
-              style={{ width:'100%', borderRadius:8, display:'block', opacity: state.card1Visible ? 1 : 0.4 }} />
-            <div style={{ fontSize:12, fontWeight:700, color:'#333', textAlign:'center', marginTop:4 }}>{state.card1Name}</div>
+              style={{ width:60, borderRadius:6, display:'block', flexShrink:0, opacity: state.card1Visible ? 1 : 0.4 }} />
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:'#111', marginBottom:4, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                {state.card1Name}
+              </div>
+              <div style={{ fontSize:10, color: state.card1Visible ? '#2e7d32' : '#aaa', fontWeight:600 }}>
+                {state.card1Visible ? '● On Overlay' : '○ Hidden'}
+              </div>
+            </div>
           </div>
         )}
 
@@ -406,8 +420,9 @@ export function DeckPanel({ sections, totalCards, onShowImport, onShowAddCard, o
 
 const fLabel   = { fontSize:11, color:'#777', marginBottom:4, fontWeight:500 };
 const secTitle = { fontSize:11, fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:1.5, borderBottom:'1px solid #ebebeb', paddingBottom:8, marginBottom:12 };
-const inp      = { width:'100%', padding:'7px 9px', border:'1px solid #ddd', borderRadius:6, fontSize:13, fontFamily:"'Inter',sans-serif", color:'#111', background:'#fafafa', outline:'none' };
-const linkBtn  = { padding:'10px 14px', background:'#1a73e8', color:'#fff', border:'none', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', letterSpacing:1, textTransform:'uppercase', width:'100%' };
-const searchBtn = { padding:'7px 14px', background:'#1a73e8', color:'#fff', border:'none', borderRadius:6, fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 };
+const openBtn  = { padding:'5px 10px', background:'#1a73e8', color:'#fff', border:'none', borderRadius:6, fontSize:11, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 };
+const inp      = { width:'100%', padding:'6px 8px', border:'1px solid #ddd', borderRadius:6, fontSize:12, fontFamily:"'Inter',sans-serif", color:'#111', background:'#fafafa', outline:'none' };
+
+const searchBtn = { padding:'6px 12px', background:'#1a73e8', color:'#fff', border:'none', borderRadius:6, fontSize:12, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 };
 const toolBtn  = { padding:'5px 11px', background:'#fff', color:'#444', border:'1px solid #ddd', borderRadius:6, fontSize:11, fontWeight:700, cursor:'pointer' };
 const qtyBtn   = { width:18, height:18, background:'none', border:'1px solid #ddd', borderRadius:3, fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', padding:0, color:'#555', lineHeight:1 };
