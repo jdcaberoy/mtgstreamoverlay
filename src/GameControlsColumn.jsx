@@ -1,4 +1,5 @@
-import { EVENT_FONTS, PLAYER_COLORS } from './store';
+import React, { useState } from 'react';
+import { EVENT_FONTS, PLAYER_COLORS, CHROMA_COLORS } from './store';
 
 const MATCH_STAGES = ['Finals','Semi-Finals','Quarter-Finals','Top 8','Top 16','Group Stage','Playoffs'];
 const TOURN_STYLES = ['Single Elim','Double Elim','Round Robin','Swiss','Best of Series'];
@@ -9,59 +10,60 @@ export default function GameControlsColumn({ state, setState }) {
   function updEv(field, val) { setState(p => ({ ...p, [field]: val })); }
 
   function updPlayer(i, field, val) {
-    setState(p => {
-      const players = p.players.map((pl, idx) => idx === i ? { ...pl, [field]: val } : pl);
-      return { ...p, players };
-    });
+    setState(p => ({
+      ...p,
+      players: p.players.map((pl, idx) => idx === i ? { ...pl, [field]: val } : pl),
+    }));
   }
 
   function stepLP(i, delta) {
-    setState(p => {
-      const players = p.players.map((pl, idx) =>
+    setState(p => ({
+      ...p,
+      players: p.players.map((pl, idx) =>
         idx === i ? { ...pl, lp: Math.max(0, pl.lp + delta) } : pl
-      );
-      return { ...p, players };
-    });
+      ),
+    }));
   }
 
   function toggleElim(i) {
-    setState(p => {
-      const players = p.players.map((pl, idx) => idx === i ? { ...pl, elim: !pl.elim } : pl);
-      return { ...p, players };
-    });
+    setState(p => ({
+      ...p,
+      players: p.players.map((pl, idx) => idx === i ? { ...pl, elim: !pl.elim } : pl),
+    }));
   }
 
   function addCounter(i, name, val) {
     if (!name.trim()) return;
-    setState(p => {
-      const players = p.players.map((pl, idx) =>
+    setState(p => ({
+      ...p,
+      players: p.players.map((pl, idx) =>
         idx === i ? { ...pl, ctrs: [...pl.ctrs, { name: name.trim(), val: parseInt(val) || 0 }] } : pl
-      );
-      return { ...p, players };
-    });
+      ),
+    }));
   }
 
   function updCounter(pi, ci, field, val) {
-    setState(p => {
-      const players = p.players.map((pl, idx) => {
+    setState(p => ({
+      ...p,
+      players: p.players.map((pl, idx) => {
         if (idx !== pi) return pl;
-        const ctrs = pl.ctrs.map((c, ci2) =>
-          ci2 === ci ? { ...c, [field]: field === 'val' ? (parseInt(val) || 0) : val } : c
-        );
-        return { ...pl, ctrs };
-      });
-      return { ...p, players };
-    });
+        return {
+          ...pl,
+          ctrs: pl.ctrs.map((c, ci2) =>
+            ci2 === ci ? { ...c, [field]: field === 'val' ? (parseInt(val) || 0) : val } : c
+          ),
+        };
+      }),
+    }));
   }
 
   function delCounter(pi, ci) {
-    setState(p => {
-      const players = p.players.map((pl, idx) => {
-        if (idx !== pi) return pl;
-        return { ...pl, ctrs: pl.ctrs.filter((_, i) => i !== ci) };
-      });
-      return { ...p, players };
-    });
+    setState(p => ({
+      ...p,
+      players: p.players.map((pl, idx) =>
+        idx === pi ? { ...pl, ctrs: pl.ctrs.filter((_, i) => i !== ci) } : pl
+      ),
+    }));
   }
 
   const PNAMES = ['P1','P2','P3','P4'];
@@ -70,7 +72,6 @@ export default function GameControlsColumn({ state, setState }) {
     <div style={{ display:'flex', flexDirection:'column', gap:14, height:'100%', overflowY:'auto' }}>
       <div style={secTitle}>Game Overlay Controls</div>
 
-      {/* Overlay link */}
       <button style={linkBtn} onClick={() => window.open('/overlay/game', '_blank')}>
         🎮 Open Game Overlay
       </button>
@@ -86,16 +87,67 @@ export default function GameControlsColumn({ state, setState }) {
         </div>
       </Section>
 
+      {/* Chroma colors */}
+      <Section title="Overlay Background (Chroma Key)">
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          <div>
+            <div style={{ fontSize:10, color:'#888', marginBottom:4, fontWeight:600 }}>Game Overlay</div>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+              {CHROMA_COLORS.map(c => (
+                <button key={c.value} title={c.label} onClick={() => updEv('gameChromaColor', c.value)} style={{
+                  display:'flex', alignItems:'center', gap:5,
+                  padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:600,
+                  border: s.gameChromaColor === c.value ? '2px solid #111' : '1px solid #ddd',
+                  background: s.gameChromaColor === c.value ? '#f0f0f0' : '#fff',
+                  color: '#333',
+                }}>
+                  <span style={{ width:12, height:12, borderRadius:'50%', background:c.value, border:'1px solid #ccc', display:'inline-block', flexShrink:0 }} />
+                  {c.label}
+                </button>
+              ))}
+              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                <label style={{ fontSize:11, color:'#888' }}>Custom:</label>
+                <input type="color" value={s.gameChromaColor || '#00ff00'}
+                  onChange={e => updEv('gameChromaColor', e.target.value)}
+                  style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, cursor:'pointer', padding:2 }} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize:10, color:'#888', marginBottom:4, fontWeight:600 }}>Card Overlay</div>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+              {CHROMA_COLORS.map(c => (
+                <button key={c.value} title={c.label} onClick={() => updEv('cardChromaColor', c.value)} style={{
+                  display:'flex', alignItems:'center', gap:5,
+                  padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:600,
+                  border: s.cardChromaColor === c.value ? '2px solid #111' : '1px solid #ddd',
+                  background: s.cardChromaColor === c.value ? '#f0f0f0' : '#fff',
+                  color: '#333',
+                }}>
+                  <span style={{ width:12, height:12, borderRadius:'50%', background:c.value, border:'1px solid #ccc', display:'inline-block', flexShrink:0 }} />
+                  {c.label}
+                </button>
+              ))}
+              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                <label style={{ fontSize:11, color:'#888' }}>Custom:</label>
+                <input type="color" value={s.cardChromaColor || '#00ff00'}
+                  onChange={e => updEv('cardChromaColor', e.target.value)}
+                  style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, cursor:'pointer', padding:2 }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Font */}
       <Section title="Event Name Font">
         <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
           {EVENT_FONTS.map(f => (
             <button key={f.value} onClick={() => updEv('evFont', f.value)} style={{
-              padding: '6px 12px',
+              padding:'6px 12px',
               border: s.evFont === f.value ? '2px solid #111' : '1px solid #ddd',
               borderRadius: 6, background: s.evFont === f.value ? '#f5f5f5' : '#fff',
-              fontFamily: f.value, fontSize: 15, cursor: 'pointer',
-              letterSpacing: 2, lineHeight: 1,
+              fontFamily: f.value, fontSize: 15, cursor:'pointer', letterSpacing:2, lineHeight:1,
             }}>{f.label}</button>
           ))}
         </div>
@@ -120,125 +172,141 @@ export default function GameControlsColumn({ state, setState }) {
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
           <Field label="Cur Round">
-            <input style={inp} type="number" min={1} max={99}
-              value={s.evCurRound} onChange={e => updEv('evCurRound', parseInt(e.target.value)||1)} />
+            <input style={inp} type="number" min={1} max={99} value={s.evCurRound}
+              onChange={e => updEv('evCurRound', parseInt(e.target.value)||1)} />
           </Field>
           <Field label="Tot Rounds">
-            <input style={inp} type="number" min={1} max={99}
-              value={s.evTotRounds} onChange={e => updEv('evTotRounds', parseInt(e.target.value)||1)} />
+            <input style={inp} type="number" min={1} max={99} value={s.evTotRounds}
+              onChange={e => updEv('evTotRounds', parseInt(e.target.value)||1)} />
           </Field>
           <Field label="Turn">
-            <input style={inp} type="number" min={1} max={999}
-              value={s.evTurn} onChange={e => updEv('evTurn', parseInt(e.target.value)||1)} />
+            <input style={inp} type="number" min={1} max={999} value={s.evTurn}
+              onChange={e => updEv('evTurn', parseInt(e.target.value)||1)} />
           </Field>
         </div>
         <Field label="Max Life Points">
-          <input style={inp} type="number" min={1} max={999999}
-            value={s.maxLP} onChange={e => updEv('maxLP', parseInt(e.target.value)||1)} />
+          <input style={inp} type="number" min={1} max={999999} value={s.maxLP}
+            onChange={e => updEv('maxLP', parseInt(e.target.value)||1)} />
         </Field>
-        {/* Show/hide toggles */}
-        <div style={{ display:'flex', gap:10, marginTop:4 }}>
-          <Toggle label="Show Round" checked={s.showRound} onChange={v => updEv('showRound', v)} />
-          <Toggle label="Show Style" checked={s.showStyle} onChange={v => updEv('showStyle', v)} />
+        <div style={{ display:'flex', gap:16, marginTop:4 }}>
+          <Toggle label="Show Round"     checked={s.showRound} onChange={v => updEv('showRound', v)} />
+          <Toggle label="Show Style"     checked={s.showStyle} onChange={v => updEv('showStyle', v)} />
         </div>
       </Section>
 
-      {/* Player count */}
+      {/* Players */}
       <Section title="Players">
         <div style={{ display:'flex', gap:6, marginBottom:10 }}>
           {[2,3,4].map(n => (
-            <PillBtn key={n} active={s.playerCount === n} onClick={() => updEv('playerCount', n)}>
-              {n}
-            </PillBtn>
+            <PillBtn key={n} active={s.playerCount === n} onClick={() => updEv('playerCount', n)}>{n}</PillBtn>
           ))}
         </div>
 
         {s.players.slice(0, s.playerCount).map((p, i) => (
-          <div key={i} style={{
-            border:'1px solid #ebebeb', borderRadius:8, padding:12, marginBottom:8,
-          }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                <div style={{ width:9, height:9, borderRadius:'50%', background:p.color }} />
-                <span style={{ fontSize:11, fontWeight:700, color:'#222', textTransform:'uppercase', letterSpacing:1 }}>
-                  {PNAMES[i]}
-                </span>
-              </div>
-              <button
-                onClick={() => toggleElim(i)}
-                style={{
-                  padding:'4px 10px', borderRadius:5, cursor:'pointer',
-                  border: p.elim ? '1px solid #ef5350' : '1px solid #ddd',
-                  background: p.elim ? '#fee2e2' : '#f9f9f9',
-                  color: p.elim ? '#c0392b' : '#666',
-                  fontSize:11, fontWeight:700,
-                }}
-              >{p.elim ? '✕ Eliminated' : '+ In Game'}</button>
-            </div>
-
-            <Field label="Name">
-              <input style={inp} value={p.name} onChange={e => updPlayer(i,'name',e.target.value)} />
-            </Field>
-            <Field label="Strategy / Deck">
-              <input style={inp} value={p.strat} onChange={e => updPlayer(i,'strat',e.target.value)} />
-            </Field>
-
-            {/* Color picker */}
-            <Field label="Color">
-              <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
-                {PLAYER_COLORS.map(c => (
-                  <button key={c.value} title={c.label}
-                    onClick={() => updPlayer(i,'color',c.value)}
-                    style={{
-                      width:22, height:22, borderRadius:'50%',
-                      background: c.value, border: p.color === c.value ? '3px solid #111' : '2px solid transparent',
-                      cursor:'pointer', outline:'none',
-                    }}
-                  />
-                ))}
-              </div>
-            </Field>
-
-            {/* LP controls */}
-            <Field label={`Life Points (max ref: ${s.maxLP})`}>
-              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                <LPBtn onClick={() => stepLP(i,-5)} minus>−5</LPBtn>
-                <LPBtn onClick={() => stepLP(i,-1)} minus>−</LPBtn>
-                <input
-                  style={{ ...inp, width:70, textAlign:'center', fontWeight:700 }}
-                  type="number" min={0} value={p.lp}
-                  onChange={e => updPlayer(i,'lp', Math.max(0, parseInt(e.target.value)||0))}
-                />
-                <LPBtn onClick={() => stepLP(i,1)}>+</LPBtn>
-                <LPBtn onClick={() => stepLP(i,5)}>+5</LPBtn>
-              </div>
-            </Field>
-
-            {/* Counters */}
-            <div style={{ fontSize:10, color:'#999', fontWeight:700, textTransform:'uppercase', letterSpacing:1, margin:'4px 0 6px' }}>
-              Custom Counters
-            </div>
-            {p.ctrs.map((c, ci) => (
-              <div key={ci} style={{ display:'flex', gap:5, marginBottom:5, alignItems:'center' }}>
-                <input style={{ ...inp, flex:1, fontSize:12, padding:'5px 8px' }}
-                  value={c.name} onChange={e => updCounter(i,ci,'name',e.target.value)} placeholder="Name" />
-                <input style={{ ...inp, width:60, fontSize:12, padding:'5px 8px' }}
-                  type="number" value={c.val} onChange={e => updCounter(i,ci,'val',e.target.value)} />
-                <button onClick={() => delCounter(i,ci)}
-                  style={{ background:'none', border:'none', cursor:'pointer', color:'#ccc', fontSize:14 }}>✕</button>
-              </div>
-            ))}
-            <AddCounter onAdd={(name, val) => addCounter(i, name, val)} />
-          </div>
+          <PlayerBlock key={i}
+            p={p} i={i} label={PNAMES[i]} maxLP={s.maxLP}
+            onUpdPlayer={updPlayer}
+            onStepLP={stepLP}
+            onToggleElim={toggleElim}
+            onAddCounter={addCounter}
+            onUpdCounter={updCounter}
+            onDelCounter={delCounter}
+          />
         ))}
       </Section>
     </div>
   );
 }
 
+function PlayerBlock({ p, i, label, maxLP, onUpdPlayer, onStepLP, onToggleElim, onAddCounter, onUpdCounter, onDelCounter }) {
+  return (
+    <div style={{ border:'1px solid #ebebeb', borderRadius:8, padding:12, marginBottom:8 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <div style={{ width:9, height:9, borderRadius:'50%', background:p.color }} />
+          <span style={{ fontSize:11, fontWeight:700, color:'#222', textTransform:'uppercase', letterSpacing:1 }}>{label}</span>
+        </div>
+        <button onClick={() => onToggleElim(i)} style={{
+          padding:'4px 10px', borderRadius:5, cursor:'pointer',
+          border: p.elim ? '1px solid #ef5350' : '1px solid #ddd',
+          background: p.elim ? '#fee2e2' : '#f9f9f9',
+          color: p.elim ? '#c0392b' : '#666',
+          fontSize:11, fontWeight:700,
+        }}>{p.elim ? '✕ Eliminated' : '+ In Game'}</button>
+      </div>
+
+      <Field label="Name">
+        <input style={inp} value={p.name} onChange={e => onUpdPlayer(i,'name',e.target.value)} />
+      </Field>
+      <Field label="Strategy / Deck">
+        <input style={inp} value={p.strat} onChange={e => onUpdPlayer(i,'strat',e.target.value)} />
+      </Field>
+
+      {/* Wins */}
+      <Field label="Wins">
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <Toggle label="Show on overlay" checked={!!p.showWins} onChange={v => onUpdPlayer(i,'showWins',v)} />
+          <div style={{ display:'flex', alignItems:'center', gap:4, marginLeft:'auto' }}>
+            <LPBtn minus onClick={() => onUpdPlayer(i,'wins',Math.max(0,(p.wins||0)-1))}>−</LPBtn>
+            <input style={{ ...inp, width:50, textAlign:'center', fontWeight:700 }}
+              type="number" min={0} value={p.wins||0}
+              onChange={e => onUpdPlayer(i,'wins',Math.max(0,parseInt(e.target.value)||0))} />
+            <LPBtn onClick={() => onUpdPlayer(i,'wins',(p.wins||0)+1)}>+</LPBtn>
+          </div>
+        </div>
+      </Field>
+
+      {/* Color */}
+      <Field label="Color">
+        <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
+          {PLAYER_COLORS.map(c => (
+            <button key={c.value} title={c.label} onClick={() => onUpdPlayer(i,'color',c.value)} style={{
+              width:22, height:22, borderRadius:'50%', background:c.value,
+              border: p.color === c.value ? '3px solid #111' : '2px solid transparent',
+              cursor:'pointer', outline:'none',
+            }} />
+          ))}
+          <input type="color" value={p.color || '#4fc3f7'}
+            onChange={e => onUpdPlayer(i,'color',e.target.value)}
+            style={{ width:22, height:22, border:'1px solid #ddd', borderRadius:'50%', cursor:'pointer', padding:1 }} />
+        </div>
+      </Field>
+
+      {/* LP */}
+      <Field label={`Life Points (max ref: ${maxLP})`}>
+        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <LPBtn minus onClick={() => onStepLP(i,-5)}>−5</LPBtn>
+          <LPBtn minus onClick={() => onStepLP(i,-1)}>−</LPBtn>
+          <input style={{ ...inp, width:70, textAlign:'center', fontWeight:700 }}
+            type="number" min={0} value={p.lp}
+            onChange={e => onUpdPlayer(i,'lp', Math.max(0, parseInt(e.target.value)||0))} />
+          <LPBtn onClick={() => onStepLP(i,1)}>+</LPBtn>
+          <LPBtn onClick={() => onStepLP(i,5)}>+5</LPBtn>
+        </div>
+      </Field>
+
+      {/* Counters */}
+      <div style={{ fontSize:10, color:'#999', fontWeight:700, textTransform:'uppercase', letterSpacing:1, margin:'4px 0 6px' }}>
+        Custom Counters
+      </div>
+      {p.ctrs.map((c, ci) => (
+        <div key={ci} style={{ display:'flex', gap:5, marginBottom:5, alignItems:'center' }}>
+          <input style={{ ...inp, flex:1, fontSize:12, padding:'5px 8px' }}
+            value={c.name} onChange={e => onUpdCounter(i,ci,'name',e.target.value)} placeholder="Name" />
+          <input style={{ ...inp, width:60, fontSize:12, padding:'5px 8px' }}
+            type="number" value={c.val} onChange={e => onUpdCounter(i,ci,'val',e.target.value)} />
+          <button onClick={() => onDelCounter(i,ci)}
+            style={{ background:'none', border:'none', cursor:'pointer', color:'#ccc', fontSize:14 }}>✕</button>
+        </div>
+      ))}
+      <AddCounter onAdd={(name, val) => onAddCounter(i, name, val)} />
+    </div>
+  );
+}
+
 function AddCounter({ onAdd }) {
-  const [name, setName] = React.useState('');
-  const [val,  setVal]  = React.useState(0);
+  const [name, setName] = useState('');
+  const [val,  setVal]  = useState(0);
   return (
     <div style={{ display:'flex', gap:5, marginTop:4 }}>
       <input style={{ ...inp, flex:1, fontSize:12, padding:'5px 8px' }}
@@ -252,8 +320,6 @@ function AddCounter({ onAdd }) {
     </div>
   );
 }
-
-import React from 'react';
 
 function Section({ title, children }) {
   return (
@@ -276,7 +342,7 @@ function Field({ label, children }) {
 function Toggle({ label, checked, onChange }) {
   return (
     <label style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer', fontSize:12, color:'#555', userSelect:'none' }}>
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)}
+      <input type="checkbox" checked={!!checked} onChange={e => onChange(e.target.checked)}
         style={{ width:14, height:14, cursor:'pointer', accentColor:'#333' }} />
       {label}
     </label>
@@ -286,7 +352,8 @@ function Toggle({ label, checked, onChange }) {
 function PillBtn({ children, active, onClick }) {
   return (
     <button onClick={onClick} style={{
-      padding:'6px 13px', border: active ? '1px solid #111' : '1px solid #ddd',
+      padding:'6px 13px',
+      border: active ? '1px solid #111' : '1px solid #ddd',
       borderRadius:6, fontSize:11, fontWeight:700,
       color: active ? '#fff' : '#666',
       background: active ? '#111' : '#fff',
@@ -298,8 +365,8 @@ function PillBtn({ children, active, onClick }) {
 function LPBtn({ children, onClick, minus }) {
   return (
     <button onClick={onClick} style={{
-      width:30, height:30, border: '1px solid #ddd',
-      borderRadius:5, fontSize:12, fontWeight:700,
+      width:30, height:30, border:'1px solid #ddd', borderRadius:5,
+      fontSize:12, fontWeight:700,
       background: minus ? '#fdf3f2' : '#f0faf3',
       color: minus ? '#e74c3c' : '#2ecc71',
       cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
@@ -309,4 +376,4 @@ function LPBtn({ children, onClick, minus }) {
 
 const secTitle = { fontSize:11, fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:1.5, borderBottom:'1px solid #ebebeb', paddingBottom:8 };
 const inp = { width:'100%', padding:'7px 9px', border:'1px solid #ddd', borderRadius:6, fontSize:13, fontFamily:"'Inter',sans-serif", color:'#111', background:'#fafafa', outline:'none' };
-const linkBtn = { padding:'10px 14px', background:'#111', color:'#fff', border:'none', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', letterSpacing:1, textTransform:'uppercase', width:'100%' };
+const linkBtn = { padding:'10px 14px', background:'#111', color:'#fff', border:'none', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', letterSpacing:1, textTransform:'uppercase', width:'100%', marginBottom:14 };

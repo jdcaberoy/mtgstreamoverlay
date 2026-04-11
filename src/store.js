@@ -16,21 +16,29 @@ export const PLAYER_COLORS = [
   { label: 'Gold',       value: '#ffd700' },
 ];
 
+export const CHROMA_COLORS = [
+  { label: 'Green',   value: '#00ff00' },
+  { label: 'Blue',    value: '#0000ff' },
+  { label: 'Magenta', value: '#ff00ff' },
+  { label: 'Cyan',    value: '#00ffff' },
+  { label: 'Black',   value: '#000000' },
+  { label: 'White',   value: '#ffffff' },
+];
+
 export const EVENT_FONTS = [
-  { label: 'Bebas Neue',    value: "'Bebas Neue', sans-serif" },
-  { label: 'Anton',         value: "'Anton', sans-serif" },
-  { label: 'Black Han Sans',value: "'Black Han Sans', sans-serif" },
-  { label: 'Oswald',        value: "'Oswald', sans-serif" },
-  { label: 'Teko',          value: "'Teko', sans-serif" },
+  { label: 'Bebas Neue',     value: "'Bebas Neue', sans-serif" },
+  { label: 'Anton',          value: "'Anton', sans-serif" },
+  { label: 'Black Han Sans', value: "'Black Han Sans', sans-serif" },
+  { label: 'Oswald',         value: "'Oswald', sans-serif" },
+  { label: 'Teko',           value: "'Teko', sans-serif" },
 ];
 
 function makePlayer(name, strat, color) {
-  return { name, strat, lp: 40, elim: false, ctrs: [], color };
+  return { name, strat, lp: 40, elim: false, ctrs: [], color, wins: 0, showWins: false };
 }
 
 export function defaultState() {
   return {
-    // event
     evName:       'Clash of Cards',
     evFont:       EVENT_FONTS[0].value,
     evStage:      'Finals',
@@ -41,7 +49,6 @@ export function defaultState() {
     showRound:    true,
     evTurn:       1,
     maxLP:        40,
-    // players
     playerCount:  4,
     players: [
       makePlayer('Player One',   'Aggro',    '#4fc3f7'),
@@ -49,12 +56,11 @@ export function defaultState() {
       makePlayer('Player Three', 'Midrange', '#66bb6a'),
       makePlayer('Player Four',  'Combo',    '#ffa726'),
     ],
-    // overlay
-    gameLayout:   'bottom',   // bottom | corners | middle
-    // card overlay
+    gameLayout:      'bottom',
+    gameChromaColor: '#00ff00',
+    cardChromaColor: '#00ff00',
     cardImage:    null,
     cardName:     '',
-    // decks per player [0..3] = array of sections
     decks: [[], [], [], []],
   };
 }
@@ -82,19 +88,13 @@ export function useStore() {
     });
   }, []);
 
-  // listen for changes from other tabs
   useEffect(() => {
     if (!channel) return;
-    const handler = (e) => {
-      if (e.data?.type === 'sync') {
-        setStateRaw(e.data.state);
-      }
-    };
+    const handler = (e) => { if (e.data?.type === 'sync') setStateRaw(e.data.state); };
     channel.addEventListener('message', handler);
     return () => channel.removeEventListener('message', handler);
   }, []);
 
-  // also listen for storage events (fallback for same-origin tabs)
   useEffect(() => {
     const handler = (e) => {
       if (e.key === STORAGE_KEY && e.newValue) {
@@ -108,15 +108,12 @@ export function useStore() {
   return [state, setState];
 }
 
-// read-only hook for overlay pages (they only receive)
 export function useOverlayState() {
   const [state, setStateRaw] = useState(loadFromStorage);
 
   useEffect(() => {
     if (!channel) return;
-    const handler = (e) => {
-      if (e.data?.type === 'sync') setStateRaw(e.data.state);
-    };
+    const handler = (e) => { if (e.data?.type === 'sync') setStateRaw(e.data.state); };
     channel.addEventListener('message', handler);
     return () => channel.removeEventListener('message', handler);
   }, []);

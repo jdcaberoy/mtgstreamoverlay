@@ -1,12 +1,12 @@
 export default function PlayerCard({ player, maxLP, index, compact = false }) {
-  const pct = Math.max(0, Math.min(100, (player.lp / maxLP) * 100));
+  const pct    = Math.max(0, Math.min(100, (player.lp / maxLP) * 100));
   const overMax = player.lp > maxLP;
-  const color = player.color || '#4fc3f7';
+  const color   = player.color || '#4fc3f7';
 
   return (
     <div style={{
       background: 'rgba(0,0,0,0.85)',
-      border: `2px solid rgba(255,255,255,0.12)`,
+      border: '2px solid rgba(255,255,255,0.12)',
       borderTop: `3px solid ${color}`,
       borderRadius: 12,
       padding: compact ? '10px 14px' : '14px 18px',
@@ -17,19 +17,18 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
       transition: 'opacity 0.3s, filter 0.3s',
       width: '100%',
     }}>
+
       {/* Eliminated overlay */}
       {player.elim && (
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.68)',
-          borderRadius: 10,
+          background: 'rgba(0,0,0,0.68)', borderRadius: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexDirection: 'column', gap: 5, zIndex: 10,
         }}>
           <div style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: compact ? 24 : 36,
-            letterSpacing: 5, color: '#ef5350',
+            fontSize: compact ? 24 : 36, letterSpacing: 5, color: '#ef5350',
             border: '2px solid #ef5350', padding: '4px 22px', borderRadius: 6,
           }}>ELIMINATED</div>
           <div style={{ fontSize: 11, color: '#999', letterSpacing: 2, textTransform: 'uppercase' }}>
@@ -38,13 +37,30 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
         </div>
       )}
 
+      {/* Wins badge */}
+      {player.showWins && (
+        <div style={{
+          fontSize: compact ? 9 : 10, color: '#ffd700', fontWeight: 700,
+          letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2,
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}>
+          {Array.from({ length: Math.min(player.wins, 10) }).map((_, i) => (
+            <span key={i} style={{ fontSize: compact ? 10 : 12 }}>★</span>
+          ))}
+          {player.wins > 10 && <span style={{ fontSize: compact ? 10 : 11 }}>×{player.wins}</span>}
+          {player.wins === 0 && <span style={{ color: '#555' }}>No wins yet</span>}
+        </div>
+      )}
+
+      {/* Name */}
       <div style={{
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: compact ? 20 : 26,
-        color: '#fff', letterSpacing: 2, lineHeight: 1,
+        fontSize: compact ? 20 : 26, color: '#fff',
+        letterSpacing: 2, lineHeight: 1,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{player.name}</div>
 
+      {/* Strategy */}
       <div style={{
         fontSize: 11, color: '#777', textTransform: 'uppercase',
         letterSpacing: 1, margin: '2px 0 8px', fontWeight: 600,
@@ -62,8 +78,10 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
           }} />
         </div>
         <div style={{
-          fontFamily: "'Bebas Neue', sans-serif", fontSize: compact ? 18 : 22,
-          color: overMax ? '#ffd700' : '#fff', minWidth: 40, textAlign: 'right', lineHeight: 1,
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: compact ? 18 : 22,
+          color: overMax ? '#ffd700' : '#fff',
+          minWidth: 40, textAlign: 'right', lineHeight: 1,
         }}>{player.lp}</div>
       </div>
 

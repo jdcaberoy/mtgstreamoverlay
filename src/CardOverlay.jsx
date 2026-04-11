@@ -2,12 +2,13 @@ import { useOverlayState } from './store';
 
 export default function CardOverlay() {
   const state = useOverlayState();
-  const { cardImage, cardName } = state;
+  const { cardImage, cardName, cardChromaColor } = state;
+  const bg = cardChromaColor || '#00ff00';
 
   return (
     <div style={{
       width: '100vw', height: '100vh',
-      background: '#00ff00',
+      background: bg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       gap: 12,
@@ -36,7 +37,7 @@ export default function CardOverlay() {
           )}
         </>
       ) : (
-        <div style={{ color: 'rgba(0,0,0,0.2)', fontSize: 18, fontFamily: 'sans-serif' }}>
+        <div style={{ color: 'rgba(0,0,0,0.15)', fontSize: 18, fontFamily: 'sans-serif' }}>
           No card selected
         </div>
       )}
