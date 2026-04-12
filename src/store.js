@@ -34,7 +34,7 @@ export const EVENT_FONTS = [
 ];
 
 function makePlayer(name, strat, color) {
-  return { name, strat, lp: 40, elim: false, ctrs: [], color, wins: 0, showWins: false };
+  return { name, strat, lp: 40, elim: false, ctrs: [], color, wins: 0, showWins: false, manaColors: [] };
 }
 
 export function defaultState() {

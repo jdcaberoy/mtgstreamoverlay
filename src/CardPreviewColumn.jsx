@@ -28,6 +28,7 @@ function VisibilityBar({ visible, hasCard, onToggle, onClear }) {
 
 export default function CardPreviewColumn({ state, setState }) {
   const [searchQ,     setSearchQ]     = useState('');
+  const [searchSet,   setSearchSet]   = useState('');
   const [error,       setError]       = useState('');
   const [loading,     setLoading]     = useState(false);
   const [activeTab,   setActiveTab]   = useState(0);
@@ -37,9 +38,9 @@ export default function CardPreviewColumn({ state, setState }) {
   const { decks, fetchCard, clearCard, setVisible, setChroma, importDeck, addSingleCard, deleteCard, updateCardQty } =
     useDeckState(state, setState, 'decks2', 'card2Image', 'card2Name', 'card2Visible', 'card2ChromaColor');
 
-  async function handleSearch(name) {
+  async function handleSearch(name, setCode) {
     setLoading(true); setError('');
-    const result = await fetchCard(name);
+    const result = await fetchCard(name, setCode || searchSet || undefined);
     if (!result.ok) setError(result.error);
     setLoading(false);
   }
@@ -81,11 +82,15 @@ export default function CardPreviewColumn({ state, setState }) {
         </div>
 
         {/* ── Search row ── */}
-        <div style={{ display:'flex', gap:5, marginBottom:4 }}>
-          <input style={{ ...inp, flex:1 }} placeholder="Search card…"
+        <div style={{ display:'flex', gap:5, marginBottom:3 }}>
+          <input style={{ ...inp, flex:1 }} placeholder="Card name…"
             value={searchQ} onChange={e => setSearchQ(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ)} />
-          <button style={searchBtn} onClick={() => handleSearch(searchQ)} disabled={loading}>
+            onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ, searchSet)} />
+          <input style={{ ...inp, width:54, textTransform:'uppercase', letterSpacing:1 }} placeholder="SET"
+            value={searchSet} onChange={e => setSearchSet(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ, searchSet)}
+            title="Optional set code e.g. MH2, ECC" />
+          <button style={searchBtn} onClick={() => handleSearch(searchQ, searchSet)} disabled={loading}>
             {loading ? '…' : 'Show'}
           </button>
         </div>
@@ -113,7 +118,7 @@ export default function CardPreviewColumn({ state, setState }) {
           sections={sections} totalCards={totalCards}
           onShowImport={() => setShowImport(true)}
           onShowAddCard={() => setShowAddCard(true)}
-          onShow={name => handleSearch(name)}
+          onShow={(name, set) => handleSearch(name, set)}
           onDelete={(si,ci) => deleteCard(activeTab,si,ci)}
           onQtyChange={(si,ci,qty) => updateCardQty(activeTab,si,ci,qty)}
         />

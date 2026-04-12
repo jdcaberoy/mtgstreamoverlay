@@ -12,12 +12,17 @@ function parseDeckList(text) {
     const t = line.trim();
     if (!t) continue;
     if (HEADERS.test(t)) { cur = { label: t, cards: [] }; sections.push(cur); continue; }
-    let rest = t.replace(/\^[^^]*\^/g,'').replace(/\[[^\]]*\]/g,'').replace(/\*[^*]+\*/g,'').trim();
+    let rest = t.replace(/\^[^^]*\^/g,'').replace(/\*[^*]+\*/g,'').trim();
     let qty = 1;
     const m = rest.match(/^(\d+)x?\s+(.+)$/i);
     if (m) { qty = parseInt(m[1]); rest = m[2].trim(); }
-    rest = rest.replace(/\s*\([A-Za-z0-9]+\)\s*\d*/g,'').trim();
-    if (rest) cur.cards.push({ qty, name: rest });
+    // Extract set code from (SET) notation before stripping
+    let setCode = null;
+    const setMatch = rest.match(/\(([A-Za-z0-9]{2,6})\)\s*(\d+)?/);
+    if (setMatch) setCode = setMatch[1].toLowerCase();
+    // Strip collector number and set notation
+    rest = rest.replace(/\s*\([A-Za-z0-9]+\)\s*\d*/g,'').replace(/\[[^\]]*\]/g,'').trim();
+    if (rest) cur.cards.push({ qty, name: rest, set: setCode });
   }
   return sections.filter(s => s.cards.length > 0);
 }
@@ -138,6 +143,7 @@ export function AddCardModal({ onClose, onAdd }) {
 
 export function CardRow({ card, onShow, onDelete, onQtyChange }) {
   const [hover, setHover] = useState(false);
+  const handleShow = () => onShow(card.name, card.set || undefined);
   return (
     <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{ display:'flex', alignItems:'center', padding:'4px 10px', borderBottom:'1px solid #f0f0f0', gap:6, background: hover ? '#f0f7ff' : 'transparent', transition:'background 0.1s' }}>
@@ -146,8 +152,11 @@ export function CardRow({ card, onShow, onDelete, onQtyChange }) {
         <span style={{ width:20, textAlign:'center', fontSize:12, fontWeight:700, color:'#555' }}>{card.qty}</span>
         <button onClick={() => onQtyChange(card.qty+1)} style={qtyBtn}>+</button>
       </div>
-      <span onClick={onShow} style={{ flex:1, fontSize:12, color:'#222', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', cursor:'pointer' }} title={card.name}>{card.name}</span>
-      <button onClick={onShow} title="Show" style={{ background:'none', border:'none', cursor:'pointer', color:'#1a73e8', fontSize:12, flexShrink:0, padding:'0 2px' }}>👁</button>
+      <span onClick={handleShow} style={{ flex:1, fontSize:12, color:'#222', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', cursor:'pointer' }} title={card.name}>
+        {card.name}
+        {card.set && <span style={{ fontSize:9, color:'#aaa', marginLeft:5, textTransform:'uppercase', letterSpacing:1, fontWeight:700 }}>({card.set})</span>}
+      </span>
+      <button onClick={handleShow} title="Show" style={{ background:'none', border:'none', cursor:'pointer', color:'#1a73e8', fontSize:12, flexShrink:0, padding:'0 2px' }}>👁</button>
       <button onClick={onDelete} title="Remove" style={{ background:'none', border:'none', cursor:'pointer', color:'#ccc', fontSize:12, flexShrink:0, padding:'0 2px' }}
         onMouseEnter={e => e.currentTarget.style.color='#e74c3c'}
         onMouseLeave={e => e.currentTarget.style.color='#ccc'}>🗑</button>
@@ -159,9 +168,11 @@ export function CardRow({ card, onShow, onDelete, onQtyChange }) {
 export function useDeckState(state, setState, deckKey, imageKey, nameKey, visibleKey, chromaKey) {
   const decks = state[deckKey] || [[], [], [], []];
 
-  async function fetchCard(name) {
+  async function fetchCard(name, setCode) {
     try {
-      const r = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`);
+      let url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`;
+      if (setCode) url += `&set=${encodeURIComponent(setCode.toLowerCase())}`;
+      const r = await fetch(url);
       if (!r.ok) throw new Error('Not found');
       const d = await r.json();
       const img = d.image_uris?.large || d.card_faces?.[0]?.image_uris?.large;
@@ -169,7 +180,7 @@ export function useDeckState(state, setState, deckKey, imageKey, nameKey, visibl
       setState(p => ({ ...p, [imageKey]: img, [nameKey]: d.name, [visibleKey]: true }));
       return { ok: true };
     } catch (e) {
-      return { ok: false, error: 'Could not find: ' + name };
+      return { ok: false, error: 'Could not find: ' + name + (setCode ? ` (${setCode})` : '') };
     }
   }
 
@@ -248,6 +259,7 @@ export function useDeckState(state, setState, deckKey, imageKey, nameKey, visibl
 // ── Primary Card/Deck Column ──────────────────────────────────────
 export default function CardDeckColumn({ state, setState }) {
   const [searchQ,     setSearchQ]     = useState('');
+  const [searchSet,   setSearchSet]   = useState('');
   const [error,       setError]       = useState('');
   const [loading,     setLoading]     = useState(false);
   const [activeTab,   setActiveTab]   = useState(0);
@@ -257,9 +269,9 @@ export default function CardDeckColumn({ state, setState }) {
   const { decks, fetchCard, clearCard, setVisible, setChroma, importDeck, addSingleCard, deleteCard, updateCardQty } =
     useDeckState(state, setState, 'decks1', 'card1Image', 'card1Name', 'card1Visible', 'card1ChromaColor');
 
-  async function handleSearch(name) {
+  async function handleSearch(name, setCode) {
     setLoading(true); setError('');
-    const result = await fetchCard(name);
+    const result = await fetchCard(name, setCode || searchSet || undefined);
     if (!result.ok) setError(result.error);
     setLoading(false);
   }
@@ -299,11 +311,15 @@ export default function CardDeckColumn({ state, setState }) {
         </div>
 
         {/* Search */}
-        <div style={{ display:'flex', gap:5, marginBottom:4 }}>
-          <input style={{ ...inp, flex:1 }} placeholder="Search card…"
+        <div style={{ display:'flex', gap:5, marginBottom:3 }}>
+          <input style={{ ...inp, flex:1 }} placeholder="Card name…"
             value={searchQ} onChange={e => setSearchQ(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ)} />
-          <button style={searchBtn} onClick={() => handleSearch(searchQ)} disabled={loading}>{loading ? '…' : 'Show'}</button>
+            onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ, searchSet)} />
+          <input style={{ ...inp, width:54, textTransform:'uppercase', letterSpacing:1 }} placeholder="SET"
+            value={searchSet} onChange={e => setSearchSet(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key === 'Enter' && handleSearch(searchQ, searchSet)}
+            title="Optional set code e.g. MH2, ECC" />
+          <button style={searchBtn} onClick={() => handleSearch(searchQ, searchSet)} disabled={loading}>{loading ? '…' : 'Show'}</button>
         </div>
         {error && <div style={{ color:'#c62828', fontSize:11, marginBottom:4 }}>{error}</div>}
 
@@ -329,7 +345,7 @@ export default function CardDeckColumn({ state, setState }) {
           sections={sections} totalCards={totalCards}
           onShowImport={() => setShowImport(true)}
           onShowAddCard={() => setShowAddCard(true)}
-          onShow={name => handleSearch(name)}
+          onShow={(name, set) => handleSearch(name, set)}
           onDelete={(si,ci) => deleteCard(activeTab,si,ci)}
           onQtyChange={(si,ci,qty) => updateCardQty(activeTab,si,ci,qty)}
         />

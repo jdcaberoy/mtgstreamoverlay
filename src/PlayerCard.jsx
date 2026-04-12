@@ -14,21 +14,43 @@ const ELIM_STYLES = `
   }
 `;
 
+// Scryfall SVG URIs for the 5 mana colors
+const MANA_SVGS = {
+  W: 'https://svgs.scryfall.io/card-symbols/W.svg',
+  U: 'https://svgs.scryfall.io/card-symbols/U.svg',
+  B: 'https://svgs.scryfall.io/card-symbols/B.svg',
+  R: 'https://svgs.scryfall.io/card-symbols/R.svg',
+  G: 'https://svgs.scryfall.io/card-symbols/G.svg',
+};
+
+// Color order always WUBRG for consistent display
+const MANA_ORDER = ['W','U','B','R','G'];
+
 export default function PlayerCard({ player, maxLP, index, compact = false }) {
   const pct     = Math.max(0, Math.min(100, (player.lp / maxLP) * 100));
   const overMax = player.lp > maxLP;
   const color   = player.color || '#4fc3f7';
+  const wins    = player.wins || 0;
+  const mana    = (player.manaColors || []).filter(c => MANA_ORDER.includes(c));
+
+  // Border thickness: winners get thin top border, non-winners get thick
+  // so cards look visually balanced when mixed
+  const topBorderPx = player.elim ? 3 : (wins > 0 ? 2 : 4);
+  const topBorderColor = player.elim ? '#b71c1c' : color;
+
+  // Dynamic mana icon size based on count
+  const manaSize = compact ? 16 : (mana.length <= 2 ? 26 : mana.length === 3 ? 23 : mana.length === 4 ? 20 : 18);
 
   return (
     <div style={{
       background: 'rgba(0,0,0,0.85)',
       border: `2px solid ${player.elim ? 'rgba(239,83,80,0.25)' : 'rgba(255,255,255,0.12)'}`,
-      borderTop: `3px solid ${player.elim ? '#b71c1c' : color}`,
+      borderTop: `${topBorderPx}px solid ${topBorderColor}`,
       borderRadius: 12,
       padding: compact ? '10px 14px' : '14px 18px',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'border-color 0.4s, border-top-color 0.4s',
+      transition: 'border-color 0.4s, border-top-color 0.4s, border-top-width 0.3s',
       width: '100%',
     }}>
       <style>{ELIM_STYLES}</style>
@@ -38,117 +60,106 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
         <div style={{
           position: 'absolute', inset: 0,
           background: 'linear-gradient(160deg, rgba(30,0,0,0.92) 0%, rgba(80,10,10,0.88) 100%)',
-          borderRadius: 10,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: 6,
-          overflow: 'hidden',
+          borderRadius: 10, zIndex: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexDirection: 'column', gap: 6, overflow: 'hidden',
         }}>
-          {/* Scan-line sweep effect */}
           <div style={{
             position: 'absolute', left: 0, right: 0, height: '30%',
             background: 'linear-gradient(180deg, transparent, rgba(239,83,80,0.08), transparent)',
-            animation: 'elimScan 3s ease-in-out infinite',
-            pointerEvents: 'none',
+            animation: 'elimScan 3s ease-in-out infinite', pointerEvents: 'none',
           }} />
-
-          {/* Diagonal red lines (decorative) */}
-          <div style={{
-            position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', opacity: 0.12,
-          }}>
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', opacity: 0.12 }}>
             {[...Array(6)].map((_,i) => (
               <div key={i} style={{
-                position: 'absolute',
-                left: `${-20 + i * 25}%`, top: '-10%',
-                width: 2, height: '140%',
-                background: '#ef5350',
-                transform: 'rotate(-35deg)',
+                position: 'absolute', left: `${-20 + i * 25}%`, top: '-10%',
+                width: 2, height: '140%', background: '#ef5350', transform: 'rotate(-35deg)',
               }} />
             ))}
           </div>
-
-          {/* Skull icon */}
-          <div style={{
-            fontSize: compact ? 18 : 26,
-            lineHeight: 1,
-            filter: 'drop-shadow(0 0 6px rgba(239,83,80,0.8))',
-          }}>💀</div>
-
-          {/* ELIMINATED stamp */}
+          <div style={{ fontSize: compact ? 18 : 26, lineHeight: 1, filter: 'drop-shadow(0 0 6px rgba(239,83,80,0.8))' }}>💀</div>
           <div style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: compact ? 20 : 30,
-            letterSpacing: compact ? 4 : 7,
+            fontSize: compact ? 20 : 30, letterSpacing: compact ? 4 : 7,
             color: '#ef5350',
             textShadow: '0 0 14px rgba(239,83,80,0.7), 0 0 2px rgba(0,0,0,0.9)',
             border: '2px solid rgba(239,83,80,0.6)',
             padding: compact ? '2px 12px' : '4px 20px',
-            borderRadius: 4,
-            background: 'rgba(239,83,80,0.08)',
+            borderRadius: 4, background: 'rgba(239,83,80,0.08)',
             animation: 'elimPulse 2.5s ease-in-out infinite',
-            backdropFilter: 'blur(2px)',
-            position: 'relative',
+            backdropFilter: 'blur(2px)', position: 'relative',
           }}>
             ELIMINATED
-            {/* Strike-through line */}
             <div style={{
-              position: 'absolute', top: '50%', left: 0,
-              height: 2, background: 'rgba(239,83,80,0.5)',
-              animation: 'elimStrike 0.6s ease-out 0.2s both',
-              borderRadius: 1,
+              position: 'absolute', top: '50%', left: 0, height: 2,
+              background: 'rgba(239,83,80,0.5)',
+              animation: 'elimStrike 0.6s ease-out 0.2s both', borderRadius: 1,
             }} />
           </div>
-
-          {/* Player name beneath */}
-          <div style={{
-            fontSize: compact ? 9 : 11,
-            color: 'rgba(255,255,255,0.4)',
-            letterSpacing: 3,
-            textTransform: 'uppercase',
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 600,
-          }}>
+          <div style={{ fontSize: compact ? 9 : 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 3, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
             {player.name}
           </div>
         </div>
       )}
 
-      {/* ── Content (blurred + desaturated when eliminated) ── */}
-      <div style={{
-        filter: player.elim ? 'grayscale(1) brightness(0.3)' : 'none',
-        transition: 'filter 0.4s',
-      }}>
+      {/* ── Content ── */}
+      <div style={{ filter: player.elim ? 'grayscale(1) brightness(0.3)' : 'none', transition: 'filter 0.4s' }}>
+
         {/* Wins badge */}
         {player.showWins && (
-          <div style={{
-            fontSize: compact ? 9 : 10, color: '#ffd700', fontWeight: 700,
-            letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2,
-            display: 'flex', alignItems: 'center', gap: 5,
-          }}>
-            {Array.from({ length: Math.min(player.wins, 10) }).map((_, i) => (
+          <div style={{ fontSize: compact ? 9 : 10, color: '#ffd700', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+            {Array.from({ length: Math.min(wins, 10) }).map((_, i) => (
               <span key={i} style={{ fontSize: compact ? 10 : 12 }}>★</span>
             ))}
-            {player.wins > 10 && <span style={{ fontSize: compact ? 10 : 11 }}>×{player.wins}</span>}
-            {player.wins === 0 && <span style={{ color: '#555' }}>No wins yet</span>}
+            {wins > 10 && <span style={{ fontSize: compact ? 10 : 11 }}>×{wins}</span>}
+            {wins === 0 && <span style={{ color: '#555' }}>No wins yet</span>}
           </div>
         )}
 
-        {/* Name */}
-        <div style={{
-          fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: compact ? 20 : 26,
-          color: '#fff', letterSpacing: 2, lineHeight: 1,
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>{player.name}</div>
+        {/* Name row + mana icons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>
+          {/* Name */}
+          <div style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: compact ? 20 : 26,
+            color: '#fff', letterSpacing: 2, lineHeight: 1,
+            flex: 1, minWidth: 0,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{player.name}</div>
+
+          {/* Mana icons — right-aligned, dynamic spacing */}
+          {mana.length > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              // Negative margin to overlap icons slightly when many colors
+              gap: mana.length <= 2 ? 4 : mana.length === 3 ? 2 : mana.length === 4 ? 1 : 0,
+              flexShrink: 0,
+            }}>
+              {MANA_ORDER.filter(c => mana.includes(c)).map(c => (
+                <img
+                  key={c}
+                  src={MANA_SVGS[c]}
+                  alt={c}
+                  style={{
+                    width: manaSize,
+                    height: manaSize,
+                    borderRadius: '50%',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                    // Slight overlap effect for 4-5 colors
+                    marginLeft: mana.length >= 4 ? -4 : 0,
+                    flexShrink: 0,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Strategy */}
-        <div style={{
-          fontSize: 11, color: '#777', textTransform: 'uppercase',
-          letterSpacing: 1, margin: '2px 0 8px', fontWeight: 600,
-        }}>{player.strat}</div>
+        <div style={{ fontSize: 11, color: '#777', textTransform: 'uppercase', letterSpacing: 1, margin: '2px 0 8px', fontWeight: 600 }}>
+          {player.strat}
+        </div>
 
         {/* LP bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>

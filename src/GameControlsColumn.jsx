@@ -208,6 +208,12 @@ function PlayerBlock({ p, i, label, maxLP, onUpdPlayer, onStepLP, onToggleElim, 
         </div>
       </Field>
 
+      {/* Mana Colors */}
+      <ManaColorPicker
+        selected={p.manaColors || []}
+        onChange={val => onUpdPlayer(i, 'manaColors', val)}
+      />
+
       {/* LP */}
       <Field label={`LP (max ${maxLP})`}>
         <div style={{ display:'flex', alignItems:'center', gap:3 }}>
@@ -233,6 +239,50 @@ function PlayerBlock({ p, i, label, maxLP, onUpdPlayer, onStepLP, onToggleElim, 
         </div>
       ))}
       <AddCounter onAdd={(name,val) => onAddCounter(i,name,val)} />
+    </div>
+  );
+}
+
+
+// ── Mana Color Picker ─────────────────────────────────────────────
+const MANA_SVGS = {
+  W: 'https://svgs.scryfall.io/card-symbols/W.svg',
+  U: 'https://svgs.scryfall.io/card-symbols/U.svg',
+  B: 'https://svgs.scryfall.io/card-symbols/B.svg',
+  R: 'https://svgs.scryfall.io/card-symbols/R.svg',
+  G: 'https://svgs.scryfall.io/card-symbols/G.svg',
+};
+const MANA_NAMES = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+const MANA_ORDER = ['W','U','B','R','G'];
+
+function ManaColorPicker({ selected, onChange }) {
+  function toggle(c) {
+    const next = selected.includes(c) ? selected.filter(x => x !== c) : [...selected, c];
+    onChange(next);
+  }
+  return (
+    <div style={{ marginBottom:7 }}>
+      <label style={{ display:'block', fontSize:10, color:'#888', marginBottom:5, fontWeight:600 }}>Mana Colors (shown on overlay)</label>
+      <div style={{ display:'flex', gap:5, alignItems:'center' }}>
+        {MANA_ORDER.map(c => {
+          const active = selected.includes(c);
+          return (
+            <button key={c} title={MANA_NAMES[c]} onClick={() => toggle(c)} style={{
+              width:28, height:28, padding:0, borderRadius:'50%',
+              border: active ? '3px solid #111' : '2px solid transparent',
+              background: 'transparent', cursor:'pointer', outline:'none',
+              boxShadow: active ? '0 0 0 1px rgba(0,0,0,0.2)' : 'none',
+              transition:'border 0.15s, box-shadow 0.15s',
+              opacity: active ? 1 : 0.4,
+            }}>
+              <img src={MANA_SVGS[c]} alt={c} style={{ width:22, height:22, display:'block', margin:'auto', pointerEvents:'none' }} />
+            </button>
+          );
+        })}
+        {selected.length > 0 && (
+          <button onClick={() => onChange([])} style={{ fontSize:10, color:'#aaa', background:'none', border:'none', cursor:'pointer', padding:'0 4px' }}>✕ clear</button>
+        )}
+      </div>
     </div>
   );
 }
