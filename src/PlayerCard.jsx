@@ -33,9 +33,7 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
   const wins    = player.wins || 0;
   const mana    = (player.manaColors || []).filter(c => MANA_ORDER.includes(c));
 
-  // Border thickness: winners get thin top border, non-winners get thick
-  // so cards look visually balanced when mixed
-  const topBorderPx = player.elim ? 3 : (wins > 0 ? 2 : 4);
+  // Uniform border thickness — keeps all cards the same height
   const topBorderColor = player.elim ? '#b71c1c' : color;
 
   // Dynamic mana icon size based on count
@@ -45,12 +43,12 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
     <div style={{
       background: 'rgba(0,0,0,0.85)',
       border: `2px solid ${player.elim ? 'rgba(239,83,80,0.25)' : 'rgba(255,255,255,0.12)'}`,
-      borderTop: `${topBorderPx}px solid ${topBorderColor}`,
+      borderTop: `3px solid ${topBorderColor}`,
       borderRadius: 12,
       padding: compact ? '10px 14px' : '14px 18px',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'border-color 0.4s, border-top-color 0.4s, border-top-width 0.3s',
+      transition: 'border-color 0.4s, border-top-color 0.4s',
       width: '100%',
     }}>
       <style>{ELIM_STYLES}</style>
@@ -105,16 +103,30 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
       {/* ── Content ── */}
       <div style={{ filter: player.elim ? 'grayscale(1) brightness(0.3)' : 'none', transition: 'filter 0.4s' }}>
 
-        {/* Wins badge */}
-        {player.showWins && (
-          <div style={{ fontSize: compact ? 9 : 10, color: '#ffd700', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-            {Array.from({ length: Math.min(wins, 10) }).map((_, i) => (
-              <span key={i} style={{ fontSize: compact ? 10 : 12 }}>★</span>
-            ))}
-            {wins > 10 && <span style={{ fontSize: compact ? 10 : 11 }}>×{wins}</span>}
-            {wins === 0 && <span style={{ color: '#555' }}>No wins yet</span>}
-          </div>
-        )}
+        {/* Wins row — ALWAYS rendered at a fixed height on every card.
+             Content is visible only when showWins=true, but the row always
+             occupies the same vertical space, keeping all cards identical height. */}
+        <div style={{
+          height: compact ? 13 : 15,
+          marginBottom: 2,
+          display: 'flex', alignItems: 'center', gap: 4,
+          fontSize: compact ? 9 : 10, fontWeight: 700,
+          letterSpacing: 1.5, textTransform: 'uppercase',
+          overflow: 'hidden',
+        }}>
+          {player.showWins && wins > 0 && (
+            <>
+              {Array.from({ length: Math.min(wins, 10) }).map((_, wi) => (
+                <span key={wi} style={{ color: '#ffd700', fontSize: compact ? 10 : 12 }}>★</span>
+              ))}
+              {wins > 10 && <span style={{ color: '#ffd700', fontSize: compact ? 10 : 11 }}>×{wins}</span>}
+            </>
+          )}
+          {player.showWins && wins === 0 && (
+            <span style={{ color: '#444' }}>—</span>
+          )}
+          {/* If showWins=false: row is empty but still occupies height */}
+        </div>
 
         {/* Name row + mana icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>

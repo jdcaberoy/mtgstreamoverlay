@@ -219,7 +219,7 @@ function PlayerBlock({ p, i, label, maxLP, onUpdPlayer, onStepLP, onToggleElim, 
         <div style={{ display:'flex', alignItems:'center', gap:3 }}>
           <SmBtn minus onClick={() => onStepLP(i,-5)}>−5</SmBtn>
           <SmBtn minus onClick={() => onStepLP(i,-1)}>−</SmBtn>
-          <input style={{ ...inp, flex:1, textAlign:'center', fontWeight:700, padding:'4px 4px' }}
+          <input style={{ ...inp, flex:1, minWidth:52, textAlign:'center', fontWeight:700, padding:'4px 2px' }}
             type="number" min={0} value={p.lp}
             onChange={e => onUpdPlayer(i,'lp',Math.max(0,parseInt(e.target.value)||0))} />
           <SmBtn onClick={() => onStepLP(i,1)}>+</SmBtn>
@@ -349,7 +349,7 @@ function PillBtn({ children, active, onClick, fullWidth }) {
 function SmBtn({ children, onClick, minus }) {
   return (
     <button onClick={onClick} style={{
-      minWidth:28, height:28, border:'1px solid #ddd', borderRadius:5, fontSize:11, fontWeight:700,
+      minWidth:26, height:28, padding:'0 4px', border:'1px solid #ddd', borderRadius:5, fontSize:11, fontWeight:700,
       background: minus ? '#fdf3f2' : '#f0faf3',
       color: minus ? '#e74c3c' : '#2ecc71',
       cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
