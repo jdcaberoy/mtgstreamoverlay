@@ -22,7 +22,14 @@ A real-time tournament broadcast overlay system for OBS, built with React + Vite
 - **OBS-ready**: both overlays use `#00FF00` chroma key background
 
 ## Local Development
+for testing
+```bash
+npm install
+npm run build
+npm start
+```
 
+for deployment
 ```bash
 npm install
 npm run dev
@@ -33,7 +40,8 @@ npm run dev
 
 1. Push to GitHub
 2. In Render: New → Static Site → connect repo
-3. Render auto-detects `render.yaml` — build command, publish path, and SPA routing are all configured
+3. Render auto-detects `render.yaml` — build command, publish path, and SPA routing are all configured4
+4. Set the Publish Directory to "dist"
 
 ## OBS Setup
 
