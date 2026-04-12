@@ -23,8 +23,8 @@ export default function Dashboard() {
       />
       <div style={{
         display: 'grid',
-        /* Col 1: summary | Col 2+3: game controls (spans 2) | Col 4: primary card | Col 5: secondary card */
-        gridTemplateColumns: '240px 380px 300px 300px',
+        /* Col 1: summary | Col 2: game controls (3-col internal) | Col 3: primary card | Col 4: secondary card */
+        gridTemplateColumns: '240px 620px 300px 300px',
         height: '100vh',
         overflow: 'hidden',
         fontFamily: "'Inter', sans-serif",

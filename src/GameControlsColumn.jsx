@@ -47,8 +47,8 @@ export default function GameControlsColumn({ state, setState }) {
         🎮 Open Game Overlay
       </button>
 
-      {/* ── TWO-COLUMN LAYOUT ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 20px', flex:1 }}>
+      {/* ── THREE-COLUMN LAYOUT ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'0 16px', flex:1 }}>
 
         {/* ── LEFT COLUMN ── */}
         <div>
@@ -132,7 +132,7 @@ export default function GameControlsColumn({ state, setState }) {
           </Section>
         </div>
 
-        {/* ── RIGHT COLUMN ── */}
+        {/* ── MIDDLE COLUMN — P1 + P3 ── */}
         <div>
           <Section title="Players">
             <div style={{ display:'flex', gap:5, marginBottom:10 }}>
@@ -141,17 +141,62 @@ export default function GameControlsColumn({ state, setState }) {
               ))}
             </div>
 
-            {s.players.slice(0,s.playerCount).map((p,i) => (
-              <PlayerBlock key={i}
-                p={p} i={i} label={PNAMES[i]} maxLP={s.maxLP}
+            {/* P1 — always shown */}
+            <PlayerBlock key={0}
+              p={s.players[0]} i={0} label={PNAMES[0]} maxLP={s.maxLP}
+              onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
+              onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+            />
+
+            {/* P2 — shown for 2 players */}
+            {s.playerCount === 2 && (
+              <PlayerBlock key={1}
+                p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
               />
-            ))}
+            )}
+
+            {/* P3 — shown for 3-4 players */}
+            {s.playerCount >= 3 && (
+              <PlayerBlock key={2}
+                p={s.players[2]} i={2} label={PNAMES[2]} maxLP={s.maxLP}
+                onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
+                onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+              />
+            )}
           </Section>
         </div>
 
-      </div>{/* end 2-col grid */}
+        {/* ── RIGHT COLUMN — P2 + P4 ── */}
+        <div>
+          {/* Spacer to align with player count pills in middle col */}
+          <div style={{ height: s.playerCount >= 2 ? 0 : 0 }} />
+          <Section title={<span style={{ opacity:0, userSelect:'none' }}>Players</span>}>
+            {/* Empty title row keeps vertical rhythm aligned with middle col */}
+            <div style={{ height: 38, marginBottom: 0 }} />
+
+            {/* P2 — shown for 3-4 players */}
+            {s.playerCount >= 3 && (
+              <PlayerBlock key={1}
+                p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP}
+                onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
+                onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+              />
+            )}
+
+            {/* P4 — shown for 4 players */}
+            {s.playerCount >= 4 && (
+              <PlayerBlock key={3}
+                p={s.players[3]} i={3} label={PNAMES[3]} maxLP={s.maxLP}
+                onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
+                onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+              />
+            )}
+          </Section>
+        </div>
+
+      </div>{/* end 3-col grid */}
     </div>
   );
 }
