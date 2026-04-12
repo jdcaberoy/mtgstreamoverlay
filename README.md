@@ -8,7 +8,8 @@ A real-time tournament broadcast overlay system for OBS, built with React + Vite
 |-----|-------------|
 | `/` | 4-column control dashboard |
 | `/overlay/game` | 1920×1080 game overlay (chroma key #00FF00) |
-| `/overlay/card` | Card display overlay (chroma key #00FF00) |
+| `/overlay/card/1` | Primary Card display overlay (chroma key #00FF00) |
+| `/overlay/card/2` | Secondary Card display overlay (chroma key #00FF00) |
 
 ## Features
 
