@@ -16,11 +16,11 @@ A real-time tournament broadcast overlay system for OBS, built with React + Vite
 - **Real-time sync** between all open tabs via BroadcastChannel + localStorage
 - **4-column dashboard**: Game Summary / Game Controls / Card+Deck / Card Preview
 - **3 player layouts**: Bottom row, Corners, 2×2 Middle grid
-- **Player customization**: name, strategy, color, life points (uncapped), custom counters, elimination
+- **Player customization**: name, strategy, color, life points (uncapped), custom counters, elimination, mana color combinations, no. of wins
 - **Event info**: name, stage, tournament style, rounds, turn counter (all toggleable)
 - **5 display fonts** for the event name
-- **MTG card search** via Scryfall API with deck list parser
-- **OBS-ready**: both overlays use `#00FF00` chroma key background
+- **MTG card search** via Scryfall API with deck list parser. Can have two card show overlays for 2 players.
+- **OBS-ready**: Add a Browser as Source and use the Game Overlay, Primary, and Secondary Card Display URLs, add a chroma key filter on the source, use a separate browser as a control hub.
 
 ## Local Development
 for testing
