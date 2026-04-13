@@ -23,6 +23,7 @@ A real-time tournament broadcast overlay system for OBS, built with React + Vite
 - **OBS-ready**: Add a Browser as Source and use the Game Overlay, Primary, and Secondary Card Display URLs, add a chroma key filter on the source, use a separate browser as a control hub.
 
 ## Local Development
+install reactjs
 for testing
 ```bash
 npm install
