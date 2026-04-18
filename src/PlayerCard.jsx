@@ -12,9 +12,16 @@ const ELIM_STYLES = `
     20%  { opacity: 1; }
     100% { width: 100%; opacity: 1; }
   }
+  @keyframes activePulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(255,215,0,0.6), 0 0 16px rgba(255,215,0,0.3); }
+    50%       { box-shadow: 0 0 0 3px rgba(255,215,0,0.9), 0 0 28px rgba(255,215,0,0.5); }
+  }
+  @keyframes activeArrow {
+    0%, 100% { transform: translateX(0); }
+    50%       { transform: translateX(4px); }
+  }
 `;
 
-// Scryfall SVG URIs for the 5 mana colors
 const MANA_SVGS = {
   W: 'https://svgs.scryfall.io/card-symbols/W.svg',
   U: 'https://svgs.scryfall.io/card-symbols/U.svg',
@@ -22,36 +29,44 @@ const MANA_SVGS = {
   R: 'https://svgs.scryfall.io/card-symbols/R.svg',
   G: 'https://svgs.scryfall.io/card-symbols/G.svg',
 };
-
-// Color order always WUBRG for consistent display
 const MANA_ORDER = ['W','U','B','R','G'];
 
-export default function PlayerCard({ player, maxLP, index, compact = false }) {
+export default function PlayerCard({ player, maxLP, index, compact = false, isActive = false }) {
   const pct     = Math.max(0, Math.min(100, (player.lp / maxLP) * 100));
   const overMax = player.lp > maxLP;
   const color   = player.color || '#4fc3f7';
   const wins    = player.wins || 0;
   const mana    = (player.manaColors || []).filter(c => MANA_ORDER.includes(c));
-
-  // Uniform border thickness — keeps all cards the same height
-  const topBorderColor = player.elim ? '#b71c1c' : color;
-
-  // Dynamic mana icon size based on count
+  const topBorderColor = player.elim ? '#b71c1c' : isActive ? '#ffd700' : color;
   const manaSize = compact ? 16 : (mana.length <= 2 ? 26 : mana.length === 3 ? 23 : mana.length === 4 ? 20 : 18);
 
   return (
     <div style={{
-      background: 'rgba(0,0,0,0.85)',
-      border: `2px solid ${player.elim ? 'rgba(239,83,80,0.25)' : 'rgba(255,255,255,0.12)'}`,
+      background: isActive ? 'rgba(10,8,0,0.92)' : 'rgba(0,0,0,0.85)',
+      border: isActive
+        ? '2px solid rgba(255,215,0,0.35)'
+        : `2px solid ${player.elim ? 'rgba(239,83,80,0.25)' : 'rgba(255,255,255,0.12)'}`,
       borderTop: `3px solid ${topBorderColor}`,
       borderRadius: 12,
       padding: compact ? '10px 14px' : '14px 18px',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'border-color 0.4s, border-top-color 0.4s',
+      transition: 'border-color 0.3s, border-top-color 0.3s, background 0.3s, box-shadow 0.3s',
       width: '100%',
+      animation: isActive && !player.elim ? 'activePulse 2s ease-in-out infinite' : 'none',
     }}>
       <style>{ELIM_STYLES}</style>
+
+      {/* Active turn indicator — left edge bar */}
+      {isActive && !player.elim && (
+        <div style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0,
+          width: 4,
+          background: 'linear-gradient(180deg, #ffd700, #ffaa00)',
+          borderRadius: '0 0 0 10px',
+          zIndex: 5,
+        }} />
+      )}
 
       {/* ── ELIMINATED overlay ── */}
       {player.elim && (
@@ -62,57 +77,30 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexDirection: 'column', gap: 6, overflow: 'hidden',
         }}>
-          <div style={{
-            position: 'absolute', left: 0, right: 0, height: '30%',
-            background: 'linear-gradient(180deg, transparent, rgba(239,83,80,0.08), transparent)',
-            animation: 'elimScan 3s ease-in-out infinite', pointerEvents: 'none',
-          }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, height: '30%', background: 'linear-gradient(180deg, transparent, rgba(239,83,80,0.08), transparent)', animation: 'elimScan 3s ease-in-out infinite', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', opacity: 0.12 }}>
             {[...Array(6)].map((_,i) => (
-              <div key={i} style={{
-                position: 'absolute', left: `${-20 + i * 25}%`, top: '-10%',
-                width: 2, height: '140%', background: '#ef5350', transform: 'rotate(-35deg)',
-              }} />
+              <div key={i} style={{ position: 'absolute', left: `${-20 + i * 25}%`, top: '-10%', width: 2, height: '140%', background: '#ef5350', transform: 'rotate(-35deg)' }} />
             ))}
           </div>
           <div style={{ fontSize: compact ? 18 : 26, lineHeight: 1, filter: 'drop-shadow(0 0 6px rgba(239,83,80,0.8))' }}>💀</div>
-          <div style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: compact ? 20 : 30, letterSpacing: compact ? 4 : 7,
-            color: '#ef5350',
-            textShadow: '0 0 14px rgba(239,83,80,0.7), 0 0 2px rgba(0,0,0,0.9)',
-            border: '2px solid rgba(239,83,80,0.6)',
-            padding: compact ? '2px 12px' : '4px 20px',
-            borderRadius: 4, background: 'rgba(239,83,80,0.08)',
-            animation: 'elimPulse 2.5s ease-in-out infinite',
-            backdropFilter: 'blur(2px)', position: 'relative',
-          }}>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: compact ? 20 : 30, letterSpacing: compact ? 4 : 7, color: '#ef5350', textShadow: '0 0 14px rgba(239,83,80,0.7)', border: '2px solid rgba(239,83,80,0.6)', padding: compact ? '2px 12px' : '4px 20px', borderRadius: 4, background: 'rgba(239,83,80,0.08)', animation: 'elimPulse 2.5s ease-in-out infinite', position: 'relative' }}>
             ELIMINATED
-            <div style={{
-              position: 'absolute', top: '50%', left: 0, height: 2,
-              background: 'rgba(239,83,80,0.5)',
-              animation: 'elimStrike 0.6s ease-out 0.2s both', borderRadius: 1,
-            }} />
+            <div style={{ position: 'absolute', top: '50%', left: 0, height: 2, background: 'rgba(239,83,80,0.5)', animation: 'elimStrike 0.6s ease-out 0.2s both', borderRadius: 1 }} />
           </div>
-          <div style={{ fontSize: compact ? 9 : 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 3, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
-            {player.name}
-          </div>
+          <div style={{ fontSize: compact ? 9 : 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 3, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>{player.name}</div>
         </div>
       )}
 
       {/* ── Content ── */}
       <div style={{ filter: player.elim ? 'grayscale(1) brightness(0.3)' : 'none', transition: 'filter 0.4s' }}>
 
-        {/* Wins row — ALWAYS rendered at a fixed height on every card.
-             Content is visible only when showWins=true, but the row always
-             occupies the same vertical space, keeping all cards identical height. */}
+        {/* Wins row — always present for consistent height */}
         <div style={{
-          height: compact ? 13 : 15,
-          marginBottom: 2,
+          height: compact ? 13 : 15, marginBottom: 2,
           display: 'flex', alignItems: 'center', gap: 4,
           fontSize: compact ? 9 : 10, fontWeight: 700,
-          letterSpacing: 1.5, textTransform: 'uppercase',
-          overflow: 'hidden',
+          letterSpacing: 1.5, textTransform: 'uppercase', overflow: 'hidden',
         }}>
           {player.showWins && wins > 0 && (
             <>
@@ -122,47 +110,45 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
               {wins > 10 && <span style={{ color: '#ffd700', fontSize: compact ? 10 : 11 }}>×{wins}</span>}
             </>
           )}
-          {player.showWins && wins === 0 && (
-            <span style={{ color: '#444' }}>—</span>
-          )}
-          {/* If showWins=false: row is empty but still occupies height */}
+          {player.showWins && wins === 0 && <span style={{ color: '#444' }}>—</span>}
         </div>
 
         {/* Name row + mana icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>
-          {/* Name */}
+          {/* Active arrow — sits just left of name */}
+          {isActive && !player.elim && (
+            <div style={{
+              fontSize: compact ? 12 : 16,
+              color: '#ffd700',
+              animation: 'activeArrow 0.8s ease-in-out infinite',
+              flexShrink: 0, lineHeight: 1,
+              filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))',
+            }}>▶</div>
+          )}
+
           <div style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: compact ? 20 : 26,
-            color: '#fff', letterSpacing: 2, lineHeight: 1,
+            color: isActive && !player.elim ? '#ffd700' : '#fff',
+            letterSpacing: 2, lineHeight: 1,
             flex: 1, minWidth: 0,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            transition: 'color 0.3s',
           }}>{player.name}</div>
 
-          {/* Mana icons — right-aligned, dynamic spacing */}
+          {/* Mana icons */}
           {mana.length > 0 && (
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              // Negative margin to overlap icons slightly when many colors
-              gap: mana.length <= 2 ? 4 : mana.length === 3 ? 2 : mana.length === 4 ? 1 : 0,
+              display: 'flex', alignItems: 'center',
+              gap: mana.length <= 2 ? 4 : mana.length === 3 ? 2 : 1,
               flexShrink: 0,
             }}>
               {MANA_ORDER.filter(c => mana.includes(c)).map(c => (
-                <img
-                  key={c}
-                  src={MANA_SVGS[c]}
-                  alt={c}
-                  style={{
-                    width: manaSize,
-                    height: manaSize,
-                    borderRadius: '50%',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.6)',
-                    // Slight overlap effect for 4-5 colors
-                    marginLeft: mana.length >= 4 ? -4 : 0,
-                    flexShrink: 0,
-                  }}
-                />
+                <img key={c} src={MANA_SVGS[c]} alt={c} style={{
+                  width: manaSize, height: manaSize, borderRadius: '50%',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                  marginLeft: mana.length >= 4 ? -4 : 0, flexShrink: 0,
+                }} />
               ))}
             </div>
           )}
@@ -197,8 +183,7 @@ export default function PlayerCard({ player, maxLP, index, compact = false }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
             {player.ctrs.map((c, ci) => (
               <div key={ci} style={{
-                background: 'rgba(255,255,255,0.09)',
-                border: '1px solid rgba(255,255,255,0.18)',
+                background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.18)',
                 borderRadius: 20, padding: '3px 11px',
                 display: 'flex', alignItems: 'center', gap: 5,
                 fontSize: 11, color: '#ddd', whiteSpace: 'nowrap',

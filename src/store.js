@@ -61,6 +61,8 @@ export function defaultState() {
     // overlay
     gameLayout:       'bottom',
     gameChromaColor:  '#00ff00',
+    activePlayer:     null,   // null = feature off, 0-3 = player index
+    showActivePlayer: true,
     // card slot 1 (primary)
     card1Image:       null,
     card1Name:        '',

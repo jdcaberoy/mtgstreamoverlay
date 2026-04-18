@@ -66,11 +66,3 @@ Sideboard
 ```
 
 Supports most common formats including MTGO, Moxfield, Archidekt exports.
-
-## Sample
-
-Control
-<img width="1919" height="912" alt="Image" src="https://github.com/user-attachments/assets/93687426-1da6-4767-8b96-7e4b5cda9d9b" />
-
-Overlay
-<img width="1919" height="909" alt="Image" src="https://github.com/user-attachments/assets/d2c29506-490b-49a6-9cf0-fc942528d94d" />

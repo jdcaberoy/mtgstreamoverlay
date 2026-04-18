@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOverlayState } from './store';
 import EventBanner from './EventBanner';
 import PlayersLayer from './PlayersLayer';
+import ActivePlayerBanner from './ActivePlayerBanner';
 
 const DEFAULT_POS = [
   { x: 60,  y: 860 }, { x: 500, y: 860 }, { x: 940, y: 860 }, { x: 1380, y: 860 }
@@ -50,6 +51,7 @@ export default function GameOverlay() {
       )}
 
       <EventBanner state={state} />
+      <ActivePlayerBanner state={state} />
       <PlayersLayer
         state={state}
         manualMode={manualMode}

@@ -33,6 +33,19 @@ export default function GameControlsColumn({ state, setState }) {
     })}));
   }
 
+  function setActivePlayer(i) {
+    // If clicking the already-active player, deactivate
+    setState(p => ({ ...p, activePlayer: p.activePlayer === i ? null : i }));
+  }
+
+  function deactivateActivePlayer() {
+    setState(p => ({ ...p, activePlayer: null }));
+  }
+
+  function toggleShowActivePlayer() {
+    setState(p => ({ ...p, showActivePlayer: !p.showActivePlayer }));
+  }
+
   function delCounter(pi, ci) {
     setState(p => ({ ...p, players: p.players.map((pl,idx) => idx===pi ? {...pl,ctrs:pl.ctrs.filter((_,i)=>i!==ci)} : pl) }));
   }
@@ -46,6 +59,41 @@ export default function GameControlsColumn({ state, setState }) {
       <button style={linkBtn} onClick={() => window.open('/#/overlay/game', '_blank')}>
         🎮 Open Game Overlay
       </button>
+
+      {/* Active player quick bar */}
+      <div style={{ display:'flex', gap:5, alignItems:'center', marginBottom:6, flexWrap:'wrap' }}>
+        <span style={{ fontSize:10, color:'#888', fontWeight:700, textTransform:'uppercase', letterSpacing:1, flexShrink:0 }}>
+          Active Turn:
+        </span>
+        {s.players.slice(0,s.playerCount).map((p,i) => (
+          <button key={i} onClick={() => setActivePlayer(i)} style={{
+            padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
+            border: s.activePlayer===i ? `2px solid ${p.color||'#ffd700'}` : '1px solid #ddd',
+            background: s.activePlayer===i ? `${p.color||'#ffd700'}22` : '#fafafa',
+            color: s.activePlayer===i ? (p.color||'#ffd700') : '#666',
+            transition: 'all 0.15s',
+          }}>
+            P{i+1}
+          </button>
+        ))}
+        <button onClick={deactivateActivePlayer} disabled={s.activePlayer===null} style={{
+          padding:'4px 10px', borderRadius:6, cursor: s.activePlayer===null ? 'default' : 'pointer',
+          fontSize:11, fontWeight:700, border:'1px solid #ddd',
+          background: s.activePlayer===null ? '#f0f0f0' : '#fff9f9',
+          color: s.activePlayer===null ? '#ccc' : '#e74c3c',
+          transition: 'all 0.15s', marginLeft:'auto',
+        }}>
+          ✕ Off
+        </button>
+        <button onClick={toggleShowActivePlayer} style={{
+          padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
+          border: s.showActivePlayer ? '1px solid #2e7d32' : '1px solid #ddd',
+          background: s.showActivePlayer ? '#e8f5e9' : '#fafafa',
+          color: s.showActivePlayer ? '#2e7d32' : '#888',
+        }}>
+          {s.showActivePlayer ? '👁 Shown' : '🙈 Hidden'}
+        </button>
+      </div>
 
       {/* ── THREE-COLUMN LAYOUT ── */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'0 16px', flex:1 }}>
@@ -143,15 +191,16 @@ export default function GameControlsColumn({ state, setState }) {
 
             {/* P1 — always shown */}
             <PlayerBlock key={0}
-              p={s.players[0]} i={0} label={PNAMES[0]} maxLP={s.maxLP}
+              p={s.players[0]} i={0} label={PNAMES[0]} maxLP={s.maxLP} isActive={s.activePlayer===0}
               onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
               onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+              onSetActive={setActivePlayer}
             />
 
             {/* P2 — shown for 2 players */}
             {s.playerCount === 2 && (
               <PlayerBlock key={1}
-                p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP}
+                p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP} isActive={s.activePlayer===1}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
               />
@@ -160,7 +209,7 @@ export default function GameControlsColumn({ state, setState }) {
             {/* P3 — shown for 3-4 players */}
             {s.playerCount >= 3 && (
               <PlayerBlock key={2}
-                p={s.players[2]} i={2} label={PNAMES[2]} maxLP={s.maxLP}
+                p={s.players[2]} i={2} label={PNAMES[2]} maxLP={s.maxLP} isActive={s.activePlayer===2}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
               />
@@ -179,7 +228,7 @@ export default function GameControlsColumn({ state, setState }) {
             {/* P2 — shown for 3-4 players */}
             {s.playerCount >= 3 && (
               <PlayerBlock key={1}
-                p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP}
+                p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP} isActive={s.activePlayer===1}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
               />
@@ -188,7 +237,7 @@ export default function GameControlsColumn({ state, setState }) {
             {/* P4 — shown for 4 players */}
             {s.playerCount >= 4 && (
               <PlayerBlock key={3}
-                p={s.players[3]} i={3} label={PNAMES[3]} maxLP={s.maxLP}
+                p={s.players[3]} i={3} label={PNAMES[3]} maxLP={s.maxLP} isActive={s.activePlayer===3}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
               />
@@ -202,20 +251,29 @@ export default function GameControlsColumn({ state, setState }) {
 }
 
 // ── Player block ──────────────────────────────────────────────────
-function PlayerBlock({ p, i, label, maxLP, onUpdPlayer, onStepLP, onToggleElim, onAddCounter, onUpdCounter, onDelCounter }) {
+function PlayerBlock({ p, i, label, maxLP, isActive, onUpdPlayer, onStepLP, onToggleElim, onAddCounter, onUpdCounter, onDelCounter, onSetActive }) {
   return (
-    <div style={{ border:'1px solid #ebebeb', borderRadius:8, padding:10, marginBottom:8 }}>
+    <div style={{ border: isActive ? `2px solid ${p.color||'#ffd700'}` : '1px solid #ebebeb', borderRadius:8, padding:10, marginBottom:8, background: isActive ? `${p.color||'#ffd700'}08` : 'transparent', transition:'border 0.2s, background 0.2s' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
           <div style={{ width:9, height:9, borderRadius:'50%', background:p.color }} />
           <span style={{ fontSize:11, fontWeight:700, color:'#222', textTransform:'uppercase', letterSpacing:1 }}>{label}</span>
+          {isActive && <span style={{ fontSize:9, fontWeight:700, color: p.color||'#ffd700', background:`${p.color||'#ffd700'}20`, padding:'2px 6px', borderRadius:3, letterSpacing:1, textTransform:'uppercase' }}>▶ Active</span>}
         </div>
-        <button onClick={() => onToggleElim(i)} style={{
-          padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10, fontWeight:700,
-          border: p.elim ? '1px solid #ef5350' : '1px solid #ddd',
-          background: p.elim ? '#fee2e2' : '#f9f9f9',
-          color: p.elim ? '#c0392b' : '#666',
-        }}>{p.elim ? '✕ Out' : '✓ In'}</button>
+        <div style={{ display:'flex', gap:4, alignItems:'center' }}>
+          <button onClick={() => onSetActive(i)} style={{
+            padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10, fontWeight:700,
+            border: isActive ? `1px solid ${p.color||'#ffd700'}` : '1px solid #ddd',
+            background: isActive ? `${p.color||'#ffd700'}20` : '#f9f9f9',
+            color: isActive ? (p.color||'#ffd700') : '#888',
+          }}>{isActive ? '▶ Active' : '▷ Set'}</button>
+          <button onClick={() => onToggleElim(i)} style={{
+            padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10, fontWeight:700,
+            border: p.elim ? '1px solid #ef5350' : '1px solid #ddd',
+            background: p.elim ? '#fee2e2' : '#f9f9f9',
+            color: p.elim ? '#c0392b' : '#666',
+          }}>{p.elim ? '✕ Out' : '✓ In'}</button>
+        </div>
       </div>
 
       <Field label="Name">
