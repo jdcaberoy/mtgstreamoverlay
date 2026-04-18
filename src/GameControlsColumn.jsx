@@ -50,6 +50,14 @@ export default function GameControlsColumn({ state, setState }) {
     setState(p => ({ ...p, showActiveTurnBar: p.showActiveTurnBar === false ? true : false }));
   }
 
+  function toggleShowActiveBanner() {
+    setState(p => ({ ...p, showActiveBanner: p.showActiveBanner === false ? true : false }));
+  }
+
+  function toggleActiveBannerUseName() {
+    setState(p => ({ ...p, activeBannerUseName: p.activeBannerUseName === false ? true : false }));
+  }
+
   function delCounter(pi, ci) {
     setState(p => ({ ...p, players: p.players.map((pl,idx) => idx===pi ? {...pl,ctrs:pl.ctrs.filter((_,i)=>i!==ci)} : pl) }));
   }
@@ -92,32 +100,46 @@ export default function GameControlsColumn({ state, setState }) {
       </div>
 
       {/* Active player feature toggles */}
-      <div style={{ display:'flex', gap:5, alignItems:'center', marginBottom:10, flexWrap:'wrap' }}>
-        <span style={{ fontSize:10, color:'#888', fontWeight:700, textTransform:'uppercase', letterSpacing:1, flexShrink:0 }}>
-          Show on overlay:
-        </span>
-        <button onClick={toggleShowActiveTurnBar} style={{
-          display:'flex', alignItems:'center', gap:5,
-          padding:'4px 11px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
-          border: s.showActiveTurnBar !== false ? '1px solid #2e7d32' : '1px solid #ddd',
-          background: s.showActiveTurnBar !== false ? '#e8f5e9' : '#fafafa',
-          color: s.showActiveTurnBar !== false ? '#2e7d32' : '#888',
-          transition: 'all 0.15s',
-        }}>
-          <span style={{ fontSize:13 }}>{s.showActiveTurnBar !== false ? '✓' : '○'}</span>
-          Turn Highlight
-        </button>
-        <button onClick={toggleShowActivePointer} style={{
-          display:'flex', alignItems:'center', gap:5,
-          padding:'4px 11px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
-          border: s.showActivePointer !== false ? '1px solid #2e7d32' : '1px solid #ddd',
-          background: s.showActivePointer !== false ? '#e8f5e9' : '#fafafa',
-          color: s.showActivePointer !== false ? '#2e7d32' : '#888',
-          transition: 'all 0.15s',
-        }}>
-          <span style={{ fontSize:13 }}>{s.showActivePointer !== false ? '✓' : '○'}</span>
-          ▶ Arrow Pointer
-        </button>
+      <div style={{ marginBottom:10 }}>
+        <div style={{ fontSize:10, color:'#888', fontWeight:700, textTransform:'uppercase', letterSpacing:1, marginBottom:5 }}>
+          Active Player — Show on Overlay
+        </div>
+        <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+          <ToggleChip
+            active={s.showActiveTurnBar !== false}
+            onClick={toggleShowActiveTurnBar}
+            label="Card Highlight"
+          />
+          <ToggleChip
+            active={s.showActivePointer !== false}
+            onClick={toggleShowActivePointer}
+            label="▶ Arrow"
+          />
+          <ToggleChip
+            active={s.showActiveBanner !== false}
+            onClick={toggleShowActiveBanner}
+            label="Turn Banner"
+          />
+        </div>
+
+        {/* Banner name display sub-option — only relevant when banner is on */}
+        {s.showActiveBanner !== false && (
+          <div style={{ marginTop:6, display:'flex', alignItems:'center', gap:6 }}>
+            <span style={{ fontSize:10, color:'#aaa', fontWeight:600 }}>Banner shows:</span>
+            <button onClick={() => { if (s.activeBannerUseName !== false) return; toggleActiveBannerUseName(); }} style={{
+              padding:'3px 10px', borderRadius:5, cursor:'pointer', fontSize:11, fontWeight:700,
+              border: s.activeBannerUseName !== false ? '1px solid #1a73e8' : '1px solid #ddd',
+              background: s.activeBannerUseName !== false ? '#e8f0fe' : '#fafafa',
+              color: s.activeBannerUseName !== false ? '#1a73e8' : '#888',
+            }}>Player Name</button>
+            <button onClick={() => { if (s.activeBannerUseName === false) return; toggleActiveBannerUseName(); }} style={{
+              padding:'3px 10px', borderRadius:5, cursor:'pointer', fontSize:11, fontWeight:700,
+              border: s.activeBannerUseName === false ? '1px solid #1a73e8' : '1px solid #ddd',
+              background: s.activeBannerUseName === false ? '#e8f0fe' : '#fafafa',
+              color: s.activeBannerUseName === false ? '#1a73e8' : '#888',
+            }}>Generic Label</button>
+          </div>
+        )}
       </div>
 
       {/* ── THREE-COLUMN LAYOUT ── */}
@@ -486,6 +508,22 @@ function SmBtn({ children, onClick, minus }) {
       color: minus ? '#e74c3c' : '#2ecc71',
       cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
     }}>{children}</button>
+  );
+}
+
+function ToggleChip({ active, onClick, label }) {
+  return (
+    <button onClick={onClick} style={{
+      display:'flex', alignItems:'center', gap:4,
+      padding:'4px 11px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
+      border: active ? '1px solid #2e7d32' : '1px solid #ddd',
+      background: active ? '#e8f5e9' : '#fafafa',
+      color: active ? '#2e7d32' : '#888',
+      transition: 'all 0.15s',
+    }}>
+      <span style={{ fontSize:12 }}>{active ? '✓' : '○'}</span>
+      {label}
+    </button>
   );
 }
 
