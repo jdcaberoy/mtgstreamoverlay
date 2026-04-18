@@ -61,8 +61,9 @@ export function defaultState() {
     // overlay
     gameLayout:       'bottom',
     gameChromaColor:  '#00ff00',
-    activePlayer:     null,   // null = feature off, 0-3 = player index
-    showActivePlayer: true,
+    activePlayer:       null,   // null = feature off, 0-3 = player index
+    showActivePointer:  true,   // show arrow pointer on the player card
+    showActiveTurnBar:  true,   // show the Active Turn overlay banner/indicator
     // card slot 1 (primary)
     card1Image:       null,
     card1Name:        '',

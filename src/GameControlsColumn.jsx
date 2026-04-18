@@ -42,8 +42,12 @@ export default function GameControlsColumn({ state, setState }) {
     setState(p => ({ ...p, activePlayer: null }));
   }
 
-  function toggleShowActivePlayer() {
-    setState(p => ({ ...p, showActivePlayer: !p.showActivePlayer }));
+  function toggleShowActivePointer() {
+    setState(p => ({ ...p, showActivePointer: p.showActivePointer === false ? true : false }));
+  }
+
+  function toggleShowActiveTurnBar() {
+    setState(p => ({ ...p, showActiveTurnBar: p.showActiveTurnBar === false ? true : false }));
   }
 
   function delCounter(pi, ci) {
@@ -85,13 +89,34 @@ export default function GameControlsColumn({ state, setState }) {
         }}>
           ✕ Off
         </button>
-        <button onClick={toggleShowActivePlayer} style={{
-          padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
-          border: s.showActivePlayer ? '1px solid #2e7d32' : '1px solid #ddd',
-          background: s.showActivePlayer ? '#e8f5e9' : '#fafafa',
-          color: s.showActivePlayer ? '#2e7d32' : '#888',
+      </div>
+
+      {/* Active player feature toggles */}
+      <div style={{ display:'flex', gap:5, alignItems:'center', marginBottom:10, flexWrap:'wrap' }}>
+        <span style={{ fontSize:10, color:'#888', fontWeight:700, textTransform:'uppercase', letterSpacing:1, flexShrink:0 }}>
+          Show on overlay:
+        </span>
+        <button onClick={toggleShowActiveTurnBar} style={{
+          display:'flex', alignItems:'center', gap:5,
+          padding:'4px 11px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
+          border: s.showActiveTurnBar !== false ? '1px solid #2e7d32' : '1px solid #ddd',
+          background: s.showActiveTurnBar !== false ? '#e8f5e9' : '#fafafa',
+          color: s.showActiveTurnBar !== false ? '#2e7d32' : '#888',
+          transition: 'all 0.15s',
         }}>
-          {s.showActivePlayer ? '👁 Shown' : '🙈 Hidden'}
+          <span style={{ fontSize:13 }}>{s.showActiveTurnBar !== false ? '✓' : '○'}</span>
+          Turn Highlight
+        </button>
+        <button onClick={toggleShowActivePointer} style={{
+          display:'flex', alignItems:'center', gap:5,
+          padding:'4px 11px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:700,
+          border: s.showActivePointer !== false ? '1px solid #2e7d32' : '1px solid #ddd',
+          background: s.showActivePointer !== false ? '#e8f5e9' : '#fafafa',
+          color: s.showActivePointer !== false ? '#2e7d32' : '#888',
+          transition: 'all 0.15s',
+        }}>
+          <span style={{ fontSize:13 }}>{s.showActivePointer !== false ? '✓' : '○'}</span>
+          ▶ Arrow Pointer
         </button>
       </div>
 
@@ -203,6 +228,7 @@ export default function GameControlsColumn({ state, setState }) {
                 p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP} isActive={s.activePlayer===1}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+                onSetActive={setActivePlayer}
               />
             )}
 
@@ -212,6 +238,7 @@ export default function GameControlsColumn({ state, setState }) {
                 p={s.players[2]} i={2} label={PNAMES[2]} maxLP={s.maxLP} isActive={s.activePlayer===2}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+                onSetActive={setActivePlayer}
               />
             )}
           </Section>
@@ -231,6 +258,7 @@ export default function GameControlsColumn({ state, setState }) {
                 p={s.players[1]} i={1} label={PNAMES[1]} maxLP={s.maxLP} isActive={s.activePlayer===1}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+                onSetActive={setActivePlayer}
               />
             )}
 
@@ -240,6 +268,7 @@ export default function GameControlsColumn({ state, setState }) {
                 p={s.players[3]} i={3} label={PNAMES[3]} maxLP={s.maxLP} isActive={s.activePlayer===3}
                 onUpdPlayer={updPlayer} onStepLP={stepLP} onToggleElim={toggleElim}
                 onAddCounter={addCounter} onUpdCounter={updCounter} onDelCounter={delCounter}
+                onSetActive={setActivePlayer}
               />
             )}
           </Section>

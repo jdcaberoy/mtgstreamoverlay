@@ -16,7 +16,7 @@ const CORNER_POSITIONS = [
 ];
 
 export default function PlayersLayer({ state, manualMode = false, positions = null, onPositionsChange = null }) {
-  const { players, playerCount, gameLayout, maxLP, activePlayer, showActivePlayer } = state;
+  const { players, playerCount, gameLayout, maxLP, activePlayer, showActivePointer, showActiveTurnBar } = state;
   const visible = players.slice(0, playerCount);
   const containerRef = useRef(null);
   const draggingRef  = useRef(null);
@@ -69,7 +69,7 @@ export default function PlayersLayer({ state, manualMode = false, positions = nu
       <div style={{ position: 'absolute', inset: 0 }}>
         {visible.map((p, i) => (
           <div key={i} style={slots[i] || {}}>
-            <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActivePlayer && activePlayer === i} />
+            <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActiveTurnBar && activePlayer === i} showPointer={showActivePointer} />
           </div>
         ))}
       </div>
@@ -85,7 +85,7 @@ export default function PlayersLayer({ state, manualMode = false, positions = nu
       }}>
         {visible.map((p, i) => (
           <div key={i} style={{ flex: 1, maxWidth: 420 }}>
-            <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActivePlayer && activePlayer === i} />
+            <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActiveTurnBar && activePlayer === i} showPointer={showActivePointer} />
           </div>
         ))}
       </div>
@@ -102,7 +102,7 @@ export default function PlayersLayer({ state, manualMode = false, positions = nu
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {visible.map((p, i) => (
             <div key={i} style={{ width: 320 }}>
-              <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActivePlayer && activePlayer === i} />
+              <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActiveTurnBar && activePlayer === i} showPointer={showActivePointer} />
             </div>
           ))}
         </div>
@@ -146,7 +146,7 @@ export default function PlayersLayer({ state, manualMode = false, positions = nu
                 pointerEvents: 'none',
               }}>P{i+1} ✥ drag</div>
             )}
-            <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActivePlayer && activePlayer === i} />
+            <PlayerCard player={p} maxLP={maxLP} index={i} isActive={showActiveTurnBar && activePlayer === i} showPointer={showActivePointer} />
           </div>
         );
       })}

@@ -13,8 +13,8 @@ const ELIM_STYLES = `
     100% { width: 100%; opacity: 1; }
   }
   @keyframes activePulse {
-    0%, 100% { box-shadow: 0 0 0 2px rgba(255,215,0,0.6), 0 0 16px rgba(255,215,0,0.3); }
-    50%       { box-shadow: 0 0 0 3px rgba(255,215,0,0.9), 0 0 28px rgba(255,215,0,0.5); }
+    0%, 100% { box-shadow: var(--active-glow-lo); }
+    50%       { box-shadow: var(--active-glow-hi); }
   }
   @keyframes activeArrow {
     0%, 100% { transform: translateX(0); }
@@ -31,20 +31,23 @@ const MANA_SVGS = {
 };
 const MANA_ORDER = ['W','U','B','R','G'];
 
-export default function PlayerCard({ player, maxLP, index, compact = false, isActive = false }) {
+export default function PlayerCard({ player, maxLP, index, compact = false, isActive = false, showPointer = true }) {
   const pct     = Math.max(0, Math.min(100, (player.lp / maxLP) * 100));
   const overMax = player.lp > maxLP;
   const color   = player.color || '#4fc3f7';
   const wins    = player.wins || 0;
   const mana    = (player.manaColors || []).filter(c => MANA_ORDER.includes(c));
-  const topBorderColor = player.elim ? '#b71c1c' : isActive ? '#ffd700' : color;
+  // Use player's own color for active state — no gold override
+  const topBorderColor = player.elim ? '#b71c1c' : color;
+  // Derive rgba components for glow from player color
+  const activeColor = color;
   const manaSize = compact ? 16 : (mana.length <= 2 ? 26 : mana.length === 3 ? 23 : mana.length === 4 ? 20 : 18);
 
   return (
     <div style={{
       background: isActive ? 'rgba(10,8,0,0.92)' : 'rgba(0,0,0,0.85)',
-      border: isActive
-        ? '2px solid rgba(255,215,0,0.35)'
+      border: isActive && !player.elim
+        ? `2px solid ${activeColor}55`
         : `2px solid ${player.elim ? 'rgba(239,83,80,0.25)' : 'rgba(255,255,255,0.12)'}`,
       borderTop: `3px solid ${topBorderColor}`,
       borderRadius: 12,
@@ -54,6 +57,9 @@ export default function PlayerCard({ player, maxLP, index, compact = false, isAc
       transition: 'border-color 0.3s, border-top-color 0.3s, background 0.3s, box-shadow 0.3s',
       width: '100%',
       animation: isActive && !player.elim ? 'activePulse 2s ease-in-out infinite' : 'none',
+      // CSS vars drive the glow keyframe with player color
+      '--active-glow-lo': `0 0 0 2px ${activeColor}99, 0 0 16px ${activeColor}55`,
+      '--active-glow-hi': `0 0 0 3px ${activeColor}ee, 0 0 28px ${activeColor}88`,
     }}>
       <style>{ELIM_STYLES}</style>
 
@@ -62,7 +68,7 @@ export default function PlayerCard({ player, maxLP, index, compact = false, isAc
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0,
           width: 4,
-          background: 'linear-gradient(180deg, #ffd700, #ffaa00)',
+          background: `linear-gradient(180deg, ${activeColor}, ${activeColor}88)`,  // player color gradient
           borderRadius: '0 0 0 10px',
           zIndex: 5,
         }} />
@@ -116,20 +122,21 @@ export default function PlayerCard({ player, maxLP, index, compact = false, isAc
         {/* Name row + mana icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>
           {/* Active arrow — sits just left of name */}
-          {isActive && !player.elim && (
+          {isActive && !player.elim && showPointer && (
             <div style={{
               fontSize: compact ? 12 : 16,
-              color: '#ffd700',
+              color: activeColor,
               animation: 'activeArrow 0.8s ease-in-out infinite',
               flexShrink: 0, lineHeight: 1,
-              filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))',
+              filter: `drop-shadow(0 0 4px ${activeColor}cc)`,
+              transition: 'color 0.3s',
             }}>▶</div>
           )}
 
           <div style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: compact ? 20 : 26,
-            color: isActive && !player.elim ? '#ffd700' : '#fff',
+            color: isActive && !player.elim ? activeColor : '#fff',
             letterSpacing: 2, lineHeight: 1,
             flex: 1, minWidth: 0,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
